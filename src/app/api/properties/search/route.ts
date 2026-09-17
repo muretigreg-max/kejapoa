@@ -11,7 +11,6 @@ export async function GET(request: NextRequest) {
     const propertyType = searchParams.get("propertyType");
     const maxBudget = searchParams.get("maxBudget");
 
-    // Build the where clause
     const where: any = {
       status: "VERIFIED",
       isVerified: true,
@@ -30,7 +29,6 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Safe budget filtering
     if (maxBudget) {
       const parsedBudget = parseFloat(maxBudget);
       if (!isNaN(parsedBudget)) {
@@ -38,48 +36,49 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Fetch properties
     const properties = await prisma.property.findMany({
       where,
       include: {
-        institution: {
-          select: { name: true },
-        },
-        campus: {
-          select: { name: true },
-        },
+        institution: { select: { name: true } },
+        campus: true,
         units: {
           where: { status: "VACANT" },
-          select: {
-            id: true,
-            type: true,
-            rent: true,
-            status: true,
-          },
+          select: { id: true, type: true, rent: true, status: true },
         },
-        amenities: {
-          include: {
-            amenity: {
-              select: { name: true },
-            },
-          },
-        },
-        images: {
-          where: { isPrimary: true },
-          take: 1,
-        },
+        amenities: { include: { amenity: { select: { name: true } } } },
+        images: { where: { isPrimary: true }, take: 1 },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    // Format the response
     const formatted = properties.map((p) => {
-      // Calculate distance if coordinates exist
       let distanceKm: number | null = null;
-      
-      if (p.latitude && p.longitude && p.campus) {
-        // Simple distance calculation (you can enhance this later)
-        distanceKm = 0.5; // Placeholder - implement real calculation if needed
+
+      // Strict null-checking to satisfy Vercel's strict TypeScript checks
+      if (
+        p.latitude !== null &&
+        p.longitude !== null &&
+        p.campus !== null &&
+        p.campus.latitude !== null &&
+        p.campus.longitude !== null
+      ) {
+        const lat1 = p.latitude as number;
+        const lon1 = p.longitude as number;
+        const lat2 = p.campus.latitude as number;
+        const lon2 = p.campus.longitude as number;
+
+        // Haversine formula for distance calculation
+        const R = 6371;
+        const dLat = ((lat2 - lat1) * Math.PI) / 180;
+        const dLon = ((lon2 - lon1) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos((lat1 * Math.PI) / 180) *
+            Math.cos((lat2 * Math.PI) / 180) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        distanceKm = R * c;
       }
 
       return {
