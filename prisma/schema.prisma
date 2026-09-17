@@ -1,0 +1,239 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  VERIFICATION_OFFICER
+  LANDLORD
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  SUSPENDED
+  REJECTED
+}
+
+enum UnitStatus {
+  VACANT
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+}
+
+enum ApplicationStatus {
+  NEW
+  CONTACTED
+  VIEWING_SCHEDULED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+  MOVED_IN
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+  REFUNDED
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Landlord {
+  id                 String             @id @default(uuid())
+  fullName           String
+  phone              String             @unique
+  email              String             @unique
+  idNumber           String             @unique
+  businessName       String?
+  password           String
+  mpesaNumber        String
+  verificationStatus VerificationStatus @default(PENDING)
+  packageId          String?
+  package            Package?           @relation(fields: [packageId], references: [id])
+  subscriptionEnd    DateTime?
+  
+  properties         Property[]
+  payments           Payment[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model Institution {
+  id         String     @id @default(uuid())
+  name       String     @unique
+  type       String
+  county     String
+  town       String
+  campuses   Campus[]
+  properties Property[]
+  createdAt  DateTime   @default(now())
+}
+
+model Campus {
+  id            String      @id @default(uuid())
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  name          String
+  latitude      Float?
+  longitude     Float?
+  properties    Property[]
+  createdAt     DateTime    @default(now())
+}
+
+model Property {
+  id                    String             @id @default(uuid())
+  landlordId            String
+  landlord              Landlord           @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  institutionId         String?
+  institution           Institution?       @relation(fields: [institutionId], references: [id])
+  campusId              String?
+  campus                Campus?            @relation(fields: [campusId], references: [id])
+  
+  name                  String
+  description           String             @db.Text
+  county                String
+  town                  String
+  area                  String
+  latitude              Float?
+  longitude             Float?
+  
+  baseRent              Int
+  deposit               Int
+  
+  isVerified            Boolean            @default(false)
+  status                VerificationStatus @default(PENDING)
+  lastAvailabilityCheck DateTime           @default(now())
+  
+  units                 PropertyUnit[]
+  amenities             PropertyAmenity[]
+  enquiries             Enquiry[]
+  applications          Application[]
+  images                PropertyImage[]
+  
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+}
+
+model PropertyUnit {
+  id           String       @id @default(uuid())
+  propertyId   String
+  property     Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unitNumber   String
+  type         String
+  status       UnitStatus   @default(VACANT)
+  rent         Int?
+  
+  applications Application[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model PropertyImage {
+  id         String   @id @default(uuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url        String
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Amenity {
+  id         String              @id @default(uuid())
+  name       String              @unique
+  properties PropertyAmenity[]
+}
+
+model PropertyAmenity {
+  id         String   @id @default(uuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenityId  String
+  amenity    Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+  
+  @@unique([propertyId, amenityId])
+}
+
+model Enquiry {
+  id                 String    @id @default(uuid())
+  referenceNumber    String    @unique
+  propertyId         String
+  property           Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  studentName        String
+  studentPhone       String
+  institution        String
+  preferredRoomType  String
+  message            String?   @db.Text
+  preferredViewingDate DateTime?
+  
+  status             String    @default("NEW")
+  createdAt          DateTime  @default(now())
+}
+
+model Application {
+  id                 String            @id @default(uuid())
+  referenceNumber    String            @unique
+  propertyId         String
+  property           Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unitId             String?
+  unit               PropertyUnit?     @relation(fields: [unitId], references: [id])
+  
+  studentName        String
+  studentPhone       String
+  institution        String
+  
+  status             ApplicationStatus @default(NEW)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+}
+
+model Package {
+  id             String     @id @default(uuid())
+  name           String     @unique
+  price          Int
+  durationDays   Int
+  maxProperties  Int
+  maxUnits       Int
+  isFeatured     Boolean    @default(false)
+  
+  landlords      Landlord[]
+  createdAt      DateTime   @default(now())
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  landlordId     String
+  landlord       Landlord      @relation(fields: [landlordId], references: [id])
+  packageId      String?
+  amount         Int
+  mpesaReceipt   String?
+  phoneNumber    String
+  status         PaymentStatus @default(PENDING)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model SearchEvent {
+  id          String   @id @default(uuid())
+  institution String?
+  town        String?
+  maxRent     Int?
+  distanceKm  Float?
+  searchedAt  DateTime @default(now())
+}
