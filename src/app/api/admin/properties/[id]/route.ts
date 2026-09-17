@@ -1,6 +1,6 @@
 // src/app/api/admin/properties/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient, PropertyStatus } from "@prisma/client";
+   import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
@@ -33,7 +33,7 @@ export async function PATCH(
     const updatedProperty = await prisma.property.update({
       where: { id },
       data: {
-        status: status as PropertyStatus,
+        status: status,
         isVerified,
       },
     });

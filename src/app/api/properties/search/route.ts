@@ -52,8 +52,12 @@ export async function GET(request: NextRequest) {
       };
     }
 
+       // Safe budget filtering
     if (maxBudget) {
-      where.baseRent = { lte: maxBudget };
+      const parsedBudget = parseFloat(maxBudget);
+      if (!isNaN(parsedBudget)) {
+        where.baseRent = { lte: parsedBudget };
+      }
     }
 
     // Fetch properties with related data

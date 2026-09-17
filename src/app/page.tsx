@@ -11,7 +11,7 @@ export const metadata = {
 };
 
 export default async function Home() {
-  let institutions = [];
+  let institutions: any[] = [];
   try {
     // Safely fetch institutions. If DB is asleep, it catches the error and continues.
     institutions = await prisma.institution.findMany({
