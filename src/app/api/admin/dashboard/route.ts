@@ -1,4 +1,5 @@
 // src/app/api/admin/dashboard/route.ts
+   // FIXED SYNTAX ERROR
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
