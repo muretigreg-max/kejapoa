@@ -1,4 +1,5 @@
 // src/app/api/properties/search/route.ts
+// VERSION 2.0 - Updated for Vercel deployment - DO NOT CACHE
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
