@@ -2,42 +2,60 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { HomeIcon, Users, Building2, Home as HomeIcon2, FileText, CreditCard, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Loader2, Users, Building2, MessageSquare, RefreshCw, LogOut } from "lucide-react";
 
 interface DashboardData {
-  landlords: { total: number; verified: number; pending: number };
-  properties: { total: number; verified: number; pending: number };
-  units: { total: number; vacant: number; occupied: number; reserved: number };
+  landlords: { total: number };
+  properties: { total: number };
   enquiries: { total: number };
-  applications: { total: number; approved: number };
-  payments: { total: number; successful: number; revenue: number };
 }
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchDashboard = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/dashboard");
+      
+      if (res.status === 401) {
+        router.push("/admin/login");
+        return;
+      }
+      
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+      
+      const jsonData = await res.json();
+      
+      // Safely set data with fallbacks
+      setData({
+        landlords: jsonData.landlords || { total: 0 },
+        properties: jsonData.properties || { total: 0 },
+        enquiries: jsonData.enquiries || { total: 0 },
+      });
+    } catch (err: any) {
+      setError(err.message || "Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/admin/dashboard");
-        if (res.status === 401) {
-          router.push("/admin/login");
-          return;
-        }
-        const json = await res.json();
-        setData(json);
-      } catch (err) {
-        console.error("Failed to fetch dashboard data");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, [router]);
+    fetchDashboard();
+  }, []);
+
+  const handleLogout = () => {
+    document.cookie = "kejapoa_admin_token=; path=/; max-age=0";
+    router.push("/admin/login");
+  };
 
   if (loading) {
     return (
@@ -47,10 +65,37 @@ export default function AdminDashboardPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center max-w-md">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Connection Issue</h2>
+          <p className="text-slate-600 mb-6">{error}</p>
+          <button 
+            onClick={fetchDashboard} 
+            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-6 rounded-xl"
+          >
+            <RefreshCw className="h-4 w-4" /> Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Safe check - data should exist here
   if (!data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-slate-600">Failed to load dashboard data.</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center max-w-md">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">No Data</h2>
+          <p className="text-slate-600 mb-6">Could not load dashboard data.</p>
+          <button 
+            onClick={fetchDashboard} 
+            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-6 rounded-xl"
+          >
+            <RefreshCw className="h-4 w-4" /> Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -63,140 +108,83 @@ export default function AdminDashboardPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <div className="bg-emerald-600 p-1.5 rounded-lg">
-                <HomeIcon className="h-6 w-6 text-white" />
+                <Users className="h-6 w-6 text-white" />
               </div>
-              <span className="text-2xl font-extrabold text-emerald-800 tracking-tight">
-                KejaPoa Admin
-              </span>
+              <span className="text-2xl font-extrabold text-emerald-800 tracking-tight">KejaPoa Admin</span>
             </div>
-            <Link href="/" className="text-slate-600 hover:text-emerald-700 font-medium text-sm">
-              Back to Site
-            </Link>
+            <button 
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 text-slate-600 hover:text-emerald-700 font-medium text-sm"
+            >
+              <LogOut className="h-4 w-4" /> Logout
+            </button>
           </div>
         </div>
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* Welcome Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Platform Overview</h1>
-          <p className="text-slate-600">Monitor and manage the entire KejaPoa ecosystem.</p>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Admin Dashboard</h1>
+          <p className="text-slate-600">Welcome back. Here's an overview of your platform.</p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Landlords */}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div className="bg-blue-100 p-2.5 rounded-lg">
-                <Users className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-            <div className="text-3xl font-extrabold text-slate-900 mb-1">{data.landlords.total}</div>
-            <div className="text-sm text-slate-600">Total Landlords</div>
-            <div className="text-xs text-slate-500 mt-2">
-              {data.landlords.verified} verified • {data.landlords.pending} pending
-            </div>
-          </div>
-
-          {/* Properties */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div className="bg-emerald-100 p-2.5 rounded-lg">
-                <Building2 className="h-6 w-6 text-emerald-600" />
-              </div>
-            </div>
-            <div className="text-3xl font-extrabold text-slate-900 mb-1">{data.properties.total}</div>
-            <div className="text-sm text-slate-600">Total Properties</div>
-            <div className="text-xs text-slate-500 mt-2">
-              {data.properties.verified} verified • {data.properties.pending} pending
-            </div>
-          </div>
-
-          {/* Units */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div className="bg-amber-100 p-2.5 rounded-lg">
-                <HomeIcon2 className="h-6 w-6 text-amber-600" />
-              </div>
-            </div>
-            <div className="text-3xl font-extrabold text-slate-900 mb-1">{data.units.total}</div>
-            <div className="text-sm text-slate-600">Total Units</div>
-            <div className="text-xs text-slate-500 mt-2">
-              {data.units.vacant} vacant • {data.units.occupied} occupied
-            </div>
-          </div>
-
-          {/* Revenue */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div className="bg-green-100 p-2.5 rounded-lg">
-                <CreditCard className="h-6 w-6 text-green-600" />
-              </div>
+            <div className="bg-blue-100 p-2.5 rounded-lg w-fit mb-3">
+              <Users className="h-6 w-6 text-blue-600" />
             </div>
             <div className="text-3xl font-extrabold text-slate-900 mb-1">
-              KES {data.payments.revenue.toLocaleString()}
+              {data.landlords?.total ?? 0}
             </div>
-            <div className="text-sm text-slate-600">Total Revenue</div>
-            <div className="text-xs text-slate-500 mt-2">
-              {data.payments.successful} successful payments
-            </div>
-          </div>
-        </div>
-
-        {/* Secondary Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-          {/* Enquiries */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <FileText className="h-5 w-5 text-slate-600" />
-              <h3 className="font-semibold text-slate-900">Student Enquiries</h3>
-            </div>
-            <div className="text-2xl font-bold text-slate-900">{data.enquiries.total}</div>
+            <div className="text-sm text-slate-600">Total Landlords</div>
           </div>
 
-          {/* Applications */}
           <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <FileText className="h-5 w-5 text-slate-600" />
-              <h3 className="font-semibold text-slate-900">Applications</h3>
+            <div className="bg-emerald-100 p-2.5 rounded-lg w-fit mb-3">
+              <Building2 className="h-6 w-6 text-emerald-600" />
             </div>
-            <div className="text-2xl font-bold text-slate-900">{data.applications.total}</div>
-            <div className="text-sm text-slate-500 mt-1">
-              {data.applications.approved} approved
+            <div className="text-3xl font-extrabold text-slate-900 mb-1">
+              {data.properties?.total ?? 0}
             </div>
+            <div className="text-sm text-slate-600">Total Properties</div>
           </div>
 
-          {/* Payments */}
           <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <CreditCard className="h-5 w-5 text-slate-600" />
-              <h3 className="font-semibold text-slate-900">Payment Records</h3>
+            <div className="bg-purple-100 p-2.5 rounded-lg w-fit mb-3">
+              <MessageSquare className="h-6 w-6 text-purple-600" />
             </div>
-            <div className="text-2xl font-bold text-slate-900">{data.payments.total}</div>
-            <div className="text-sm text-slate-500 mt-1">
-              {data.payments.successful} successful
+            <div className="text-3xl font-extrabold text-slate-900 mb-1">
+              {data.enquiries?.total ?? 0}
             </div>
+            <div className="text-sm text-slate-600">Total Enquiries</div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
           <h2 className="text-xl font-bold text-slate-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link
-              href="/admin/landlords"
-              className="bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl p-4 transition-colors"
+            <Link 
+              href="/admin/properties" 
+              className="flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors"
             >
-              <div className="font-semibold text-emerald-900 mb-1">Manage Landlords</div>
-              <div className="text-sm text-emerald-700">Verify, suspend, or view landlord accounts</div>
+              <Building2 className="h-5 w-5 text-emerald-600" />
+              <div>
+                <div className="font-semibold text-slate-900">Review Properties</div>
+                <div className="text-sm text-slate-600">Approve or reject new listings</div>
+              </div>
             </Link>
-            <Link
-              href="/admin/properties"
-              className="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl p-4 transition-colors"
+            <Link 
+              href="/admin/landlords" 
+              className="flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors"
             >
-              <div className="font-semibold text-blue-900 mb-1">Manage Properties</div>
-              <div className="text-sm text-blue-700">Approve or reject property listings</div>
+              <Users className="h-5 w-5 text-blue-600" />
+              <div>
+                <div className="font-semibold text-slate-900">Manage Landlords</div>
+                <div className="text-sm text-slate-600">View and verify landlord accounts</div>
+              </div>
             </Link>
           </div>
         </div>
