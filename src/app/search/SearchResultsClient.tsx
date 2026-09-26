@@ -35,10 +35,10 @@ const amenityIcons: Record<string, React.ReactNode> = {
 };
 
 function daysAgo(dateString: string): number {
-  const date = new Date(dateString);
+  const date = new Date(dateString || new Date().toISOString());
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 }
 
 function formatDistance(km: number | null | undefined) {
@@ -146,6 +146,12 @@ function PropertyCard({ property }: { property: Property }) {
       ? "Confirmed yesterday"
       : `Confirmed ${daysSinceCheck} days ago`;
 
+  // Safe fallbacks for arrays
+  const unitTypes = property.unitTypes || [];
+  const amenities = property.amenities || [];
+  const availableUnits = property.availableUnits ?? 0;
+  const baseRent = property.baseRent || 0;
+
   return (
     <Link
       href={`/property/${property.id}`}
@@ -156,7 +162,7 @@ function PropertyCard({ property }: { property: Property }) {
         {property.primaryImage ? (
           <img
             src={property.primaryImage}
-            alt={property.name}
+            alt={property.name || "Property"}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
@@ -185,7 +191,7 @@ function PropertyCard({ property }: { property: Property }) {
         {/* Header */}
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
-            {property.name}
+            {property.name || "Unnamed Property"}
           </h3>
         </div>
 
@@ -193,24 +199,24 @@ function PropertyCard({ property }: { property: Property }) {
         <div className="flex items-center gap-1 text-sm text-slate-600 mb-3">
           <MapPin className="h-4 w-4 text-emerald-600 flex-shrink-0" />
           <span className="line-clamp-1">
-            {property.area}, {property.town}
-            {property.distanceKm !== null && ` • ${formatDistance(property.distanceKm)}`}
+            {property.area || property.town || "Location TBD"}
+            {property.distanceKm !== null && property.distanceKm !== undefined && ` • ${formatDistance(property.distanceKm)}`}
           </span>
         </div>
 
         {/* Price */}
         <div className="flex items-baseline gap-1 mb-4">
           <span className="text-2xl font-extrabold text-emerald-700">
-            KES {property.baseRent.toLocaleString()}
+            KES {baseRent.toLocaleString()}
           </span>
           <span className="text-sm text-slate-500">/month</span>
         </div>
 
-        {/* Unit Types */}
+        {/* Unit Types - SAFE */}
         <div className="flex flex-wrap gap-1.5 mb-4">
-          {property.unitTypes.slice(0, 3).map((type) => (
+          {unitTypes.slice(0, 3).map((type, idx) => (
             <span
-              key={type}
+              key={idx}
               className="bg-slate-100 text-slate-700 text-xs font-medium px-2.5 py-1 rounded-md"
             >
               {type}
@@ -218,29 +224,29 @@ function PropertyCard({ property }: { property: Property }) {
           ))}
         </div>
 
-        {/* Amenities */}
+        {/* Amenities - SAFE */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {property.amenities.slice(0, 4).map((amenity) => (
+          {amenities.slice(0, 4).map((amenity, idx) => (
             <div
-              key={amenity}
+              key={idx}
               className="flex items-center gap-1 text-xs text-slate-600 bg-emerald-50 px-2 py-1 rounded-md"
             >
-              {amenityIcons[amenity] || <span className="h-3.5 w-3.5">•</span>}
+              {amenityIcons[amenity as keyof typeof amenityIcons] || <span className="h-3.5 w-3.5">•</span>}
               <span>{amenity}</span>
             </div>
           ))}
-          {property.amenities.length > 4 && (
+          {amenities.length > 4 && (
             <span className="text-xs text-slate-500 px-2 py-1">
-              +{property.amenities.length - 4} more
+              +{amenities.length - 4} more
             </span>
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer - SAFE */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-100">
           <div className="flex items-center gap-1.5 text-sm text-slate-600">
             <Users className="h-4 w-4 text-emerald-600" />
-            <span className="font-semibold">{property.availableUnits}</span>
+            <span className="font-semibold">{availableUnits}</span>
             <span className="text-xs">available</span>
           </div>
           <span className="text-sm font-semibold text-emerald-700 group-hover:underline">
