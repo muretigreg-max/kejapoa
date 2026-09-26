@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       deposit,
       units,
       amenities,
+      images, // ✅ 1. Added images to destructuring
     } = body;
 
     // Validate required fields
@@ -67,6 +68,13 @@ export async function POST(request: NextRequest) {
             amenityId,
           })),
         },
+        // ✅ 2. Create Images if they exist in the payload
+        images: images && images.length > 0 ? {
+          create: images.map((img: any) => ({
+            url: img.url,
+            isPrimary: img.isPrimary || false,
+          })),
+        } : undefined,
       },
     });
 
