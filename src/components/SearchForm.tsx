@@ -24,9 +24,15 @@ export default function SearchForm({ institutions }: SearchFormProps) {
     const propertyType = formData.get("propertyType") as string;
     const maxBudget = formData.get("maxBudget") as string;
 
+    // ✅ Manual validation: Ensure an institution is selected
+    if (!institutionId) {
+      alert("Please select an institution to search.");
+      return;
+    }
+
     // Build query string
     const params = new URLSearchParams();
-    if (institutionId) params.set("institutionId", institutionId);
+    params.set("institutionId", institutionId);
     if (propertyType) params.set("propertyType", propertyType);
     if (maxBudget && maxBudget !== "99999") params.set("maxBudget", maxBudget);
 
@@ -42,10 +48,9 @@ export default function SearchForm({ institutions }: SearchFormProps) {
         {/* Institution */}
         <div className="flex-1 px-6 py-3 rounded-full hover:bg-slate-50 transition-colors cursor-pointer border-r border-slate-200">
           <div className="text-xs font-bold text-slate-900 mb-0.5">Where</div>
-          <select 
+          <select
             name="institutionId" 
             className="w-full text-sm text-slate-600 bg-transparent outline-none cursor-pointer appearance-none"
-            required
           >
             <option value="">Select institution</option>
             {institutions.map((inst) => (
@@ -105,7 +110,7 @@ export default function SearchForm({ institutions }: SearchFormProps) {
             <select 
               name="institutionId" 
               className="w-full pl-9 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500"
-              required
+              // ✅ Removed 'required' to prevent hidden element validation errors
             >
               <option value="">Select institution</option>
               {institutions.map((inst) => (
