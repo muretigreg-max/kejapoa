@@ -7,17 +7,7 @@ import HeroImageSlider from "@/components/HeroImageSlider";
 const prisma = new PrismaClient();
 
 export default async function HomePage() {
-  const featuredProperties = await prisma.property.findMany({
-    where: { isVerified: true, status: "VERIFIED" },
-    include: {
-      images: { where: { isPrimary: true }, take: 1 },
-      institution: { select: { name: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 3,
-  });
-export default async function HomePage() {
-  // Fetch featured properties (existing code)
+  // Fetch featured properties
   const featuredProperties = await prisma.property.findMany({
     where: { isVerified: true, status: "VERIFIED" },
     include: {
@@ -28,11 +18,11 @@ export default async function HomePage() {
     take: 3,
   });
 
-  // ✅ NEW: Fetch only institutions that have at least one property
+  // Fetch only institutions that have at least one property
   const institutionsWithProperties = await prisma.institution.findMany({
     where: {
       properties: {
-        some: {}, // Only institutions with at least one property
+        some: {},
       },
     },
     select: {
@@ -42,10 +32,11 @@ export default async function HomePage() {
     orderBy: { name: "asc" },
   });
 
+  const hasInstitutions = institutionsWithProperties.length > 0;
+
   return (
     <main className="min-h-screen bg-slate-50">
       {/* 1. HERO SECTION WITH FULL-BLEED BACKGROUND SLIDER */}
-            {/* 1. HERO SECTION WITH FULL-BLEED BACKGROUND SLIDER */}
       <section className="relative min-h-[700px] lg:min-h-[800px] text-white overflow-hidden">
         {/* Background Image Slider */}
         <HeroImageSlider />
@@ -60,9 +51,8 @@ export default async function HomePage() {
               Verified, affordable, and close to campus. Skip the stress and find your next room with KejaPoa.
             </p>
 
-            {/* ✅ STEP 3: Conditional Rendering - Search Form OR Empty State */}
+            {/* Conditional: Search Form OR Empty State */}
             {hasInstitutions ? (
-              // Show the search form if there are institutions with properties
               <form 
                 action="/search" 
                 method="GET" 
@@ -188,7 +178,6 @@ export default async function HomePage() {
                 </div>
               </form>
             ) : (
-              // Show empty state if no institutions have properties
               <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-10 max-w-2xl mx-auto text-center border border-white/30">
                 <Home className="h-16 w-16 text-emerald-600 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-slate-900 mb-2">Coming Soon!</h3>
