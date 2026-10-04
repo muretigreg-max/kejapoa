@@ -3,11 +3,10 @@
 
 import { useState, useEffect } from "react";
 
-// High-quality, free-to-use student housing images from Unsplash
 const images = [
-  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800",
-  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800",
-  "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=1920",
+  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=1920",
+  "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=1920",
 ];
 
 export default function HeroImageSlider() {
@@ -16,13 +15,13 @@ export default function HeroImageSlider() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 4000); // Swaps every 4 seconds
+    }, 5000); // Swaps every 5 seconds
 
-    return () => clearInterval(timer); // Clean up on unmount
+    return () => clearInterval(timer);
   }, []);
 
   return (
-    <div className="relative w-full h-[350px] sm:h-[400px] lg:h-[450px] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10">
+    <div className="absolute inset-0 w-full h-full">
       {images.map((img, index) => (
         <img
           key={index}
@@ -34,22 +33,16 @@ export default function HeroImageSlider() {
         />
       ))}
       
-      {/* Floating Badge */}
-      <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm px-4 py-2.5 rounded-full text-sm font-bold text-emerald-800 shadow-lg flex items-center gap-2">
-        <span className="relative flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-        </span>
-        Verified Student Housing
-      </div>
-
+      {/* Dark Overlay for Text Readability */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/80 via-emerald-800/70 to-teal-900/80" />
+      
       {/* Dots Indicator */}
-      <div className="absolute bottom-6 right-6 flex gap-2">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-20">
         {images.map((_, index) => (
           <div
             key={index}
             className={`h-2 rounded-full transition-all duration-300 ${
-              index === currentIndex ? "w-6 bg-white" : "w-2 bg-white/50"
+              index === currentIndex ? "w-8 bg-white" : "w-2 bg-white/50"
             }`}
           />
         ))}
