@@ -2,11 +2,11 @@
 import Link from "next/link";
 import { Search, ShieldCheck, MapPin, Home, Zap, Users, ArrowRight } from "lucide-react";
 import { PrismaClient } from "@prisma/client";
+import HeroImageSlider from "@/components/HeroImageSlider"; // ✅ Import the new slider
 
 const prisma = new PrismaClient();
 
 export default async function HomePage() {
-  // Fetch a few featured verified properties for the homepage
   const featuredProperties = await prisma.property.findMany({
     where: { isVerified: true, status: "VERIFIED" },
     include: {
@@ -19,78 +19,84 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      {/* 1. HERO SECTION WITH SEARCH */}
-      <section className="relative bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
-            Find Your Perfect Student <span className="text-emerald-300">Haven</span>
-          </h1>
-          <p className="text-lg sm:text-xl text-emerald-100 mb-10 max-w-2xl mx-auto">
-            Verified, affordable, and close to campus. Skip the stress and find your next room with KejaPoa.
-          </p>
+      {/* 1. HERO SECTION WITH SEARCH & SWAPPING IMAGES */}
+      <section className="relative bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white py-16 px-4 sm:px-6 lg:px-8 lg:py-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            
+            {/* LEFT: Text & Search */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
+                Find Your Perfect Student <span className="text-emerald-300">Haven</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-emerald-100 mb-8 max-w-xl mx-auto lg:mx-0">
+                Verified, affordable, and close to campus. Skip the stress and find your next room with KejaPoa.
+              </p>
 
-          {/* Search Form */}
-          <form 
-            action="/search" 
-            method="GET" 
-            className="bg-white p-4 sm:p-6 rounded-2xl shadow-2xl max-w-3xl mx-auto text-slate-900"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Institution */}
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                <select 
-                  name="institutionId" 
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700"
-                  required
-                >
-                  <option value="">Select Institution</option>
-                  {/* You can hardcode top institutions here or fetch them dynamically */}
-                  <option value="1">Dedan Kimathi University</option>
-                  <option value="2">Karatina University</option>
-                  <option value="3">Murang'a University</option>
-                </select>
-              </div>
+              {/* Search Form */}
+              <form 
+                action="/search" 
+                method="GET" 
+                className="bg-white p-4 sm:p-6 rounded-2xl shadow-2xl max-w-xl mx-auto lg:mx-0 text-slate-900"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="relative sm:col-span-3">
+                    <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                    <select 
+                      name="institutionId" 
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700"
+                      required
+                    >
+                      <option value="">Select Institution</option>
+                      <option value="1">Dedan Kimathi University</option>
+                      <option value="2">Karatina University</option>
+                      <option value="3">Murang'a University</option>
+                    </select>
+                  </div>
 
-              {/* Property Type */}
-              <div className="relative">
-                <Home className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                <select 
-                  name="propertyType" 
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700"
-                >
-                  <option value="">Any Type</option>
-                  <option value="Single Room">Single Room</option>
-                  <option value="Bedsitter">Bedsitter</option>
-                  <option value="Self-Contained">Self-Contained</option>
-                  <option value="One Bedroom">One Bedroom</option>
-                </select>
-              </div>
+                  <div className="relative">
+                    <Home className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                    <select 
+                      name="propertyType" 
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700"
+                    >
+                      <option value="">Any Type</option>
+                      <option value="Single Room">Single Room</option>
+                      <option value="Bedsitter">Bedsitter</option>
+                      <option value="Self-Contained">Self-Contained</option>
+                    </select>
+                  </div>
 
-              {/* Budget */}
-              <div className="relative">
-                <Zap className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                <select 
-                  name="maxBudget" 
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700"
+                  <div className="relative sm:col-span-2">
+                    <Zap className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                    <select 
+                      name="maxBudget" 
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700"
+                    >
+                      <option value="99999">Any Budget</option>
+                      <option value="3000">Under KES 3,000</option>
+                      <option value="5000">Under KES 5,000</option>
+                      <option value="8000">Under KES 8,000</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 text-lg"
                 >
-                  <option value="99999">Any Budget</option>
-                  <option value="3000">Under KES 3,000</option>
-                  <option value="5000">Under KES 5,000</option>
-                  <option value="8000">Under KES 8,000</option>
-                  <option value="15000">Under KES 15,000</option>
-                </select>
-              </div>
+                  <Search className="h-5 w-5" />
+                  Search Accommodations
+                </button>
+              </form>
             </div>
 
-            <button 
-              type="submit" 
-              className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 text-lg"
-            >
-              <Search className="h-5 w-5" />
-              Search Accommodations
-            </button>
-          </form>
+            {/* RIGHT: Swapping Image Slider */}
+            <div className="hidden lg:block">
+              <HeroImageSlider />
+            </div>
+
+          </div>
         </div>
       </section>
 
@@ -130,7 +136,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 3. FEATURED PROPERTIES (Dynamic) */}
+      {/* 3. FEATURED PROPERTIES */}
       {featuredProperties.length > 0 && (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50">
           <div className="max-w-6xl mx-auto">
@@ -178,12 +184,6 @@ export default async function HomePage() {
                 </Link>
               ))}
             </div>
-            
-            <div className="mt-8 text-center sm:hidden">
-              <Link href="/search" className="inline-flex items-center gap-2 text-emerald-700 font-semibold hover:underline">
-                View All Properties <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
           </div>
         </section>
       )}
@@ -204,7 +204,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Footer Simple */}
+      {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-8 px-4 text-center text-sm">
         <p>© {new Date().getFullYear()} KejaPoa. All rights reserved.</p>
         <div className="mt-2 flex justify-center gap-4">
