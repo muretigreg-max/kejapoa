@@ -54,7 +54,6 @@ export default async function HomePage() {
 
             {/* Conditional: Search Form OR Empty State */}
             {hasInstitutions ? (
-                         {hasInstitutions ? (
               <SearchForm institutions={institutionsWithProperties} />
             ) : (
               <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-10 max-w-2xl mx-auto text-center border border-white/30">
