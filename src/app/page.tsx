@@ -35,58 +35,94 @@ export default async function HomePage() {
             </p>
 
             {/* Search Form */}
+                        {/* Search Form */}
             <form 
               action="/search" 
               method="GET" 
-              className="bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl max-w-3xl mx-auto text-slate-900 border border-white/20"
+              className="bg-white/98 backdrop-blur-xl p-8 sm:p-10 rounded-3xl shadow-2xl max-w-4xl mx-auto text-slate-900 border border-white/30"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="relative sm:col-span-3">
-                  <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                  <select 
-                    name="institutionId" 
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700"
-                    required
-                  >
-                    <option value="">Select Institution</option>
-                    <option value="1">Dedan Kimathi University</option>
-                    <option value="2">Karatina University</option>
-                    <option value="3">Murang'a University</option>
-                  </select>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Institution */}
+                <div className="relative group">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">
+                    Institution
+                  </label>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 pointer-events-none" />
+                    <select 
+                      name="institutionId" 
+                      className="w-full pl-12 pr-10 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700 font-medium transition-all group-hover:border-slate-300 cursor-pointer"
+                      required
+                    >
+                      <option value="">Select Institution</option>
+                      <option value="1">Dedan Kimathi University</option>
+                      <option value="2">Karatina University</option>
+                      <option value="3">Murang'a University</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="relative">
-                  <Home className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                  <select 
-                    name="propertyType" 
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700"
-                  >
-                    <option value="">Any Type</option>
-                    <option value="Single Room">Single Room</option>
-                    <option value="Bedsitter">Bedsitter</option>
-                    <option value="Self-Contained">Self-Contained</option>
-                  </select>
+                {/* Property Type */}
+                <div className="relative group">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">
+                    Room Type
+                  </label>
+                  <div className="relative">
+                    <Home className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-blue-600 pointer-events-none" />
+                    <select 
+                      name="propertyType" 
+                      className="w-full pl-12 pr-10 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700 font-medium transition-all group-hover:border-slate-300 cursor-pointer"
+                    >
+                      <option value="">Any Type</option>
+                      <option value="Single Room">Single Room</option>
+                      <option value="Bedsitter">Bedsitter</option>
+                      <option value="Self-Contained">Self-Contained</option>
+                      <option value="One Bedroom">One Bedroom</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="relative sm:col-span-2">
-                  <Zap className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                  <select 
-                    name="maxBudget" 
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700"
-                  >
-                    <option value="99999">Any Budget</option>
-                    <option value="3000">Under KES 3,000</option>
-                    <option value="5000">Under KES 5,000</option>
-                    <option value="8000">Under KES 8,000</option>
-                  </select>
+                {/* Budget */}
+                <div className="relative group">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">
+                    Budget
+                  </label>
+                  <div className="relative">
+                    <Zap className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-600 pointer-events-none" />
+                    <select 
+                      name="maxBudget" 
+                      className="w-full pl-12 pr-10 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700 font-medium transition-all group-hover:border-slate-300 cursor-pointer"
+                    >
+                      <option value="99999">Any Budget</option>
+                      <option value="3000">Under KES 3,000</option>
+                      <option value="5000">Under KES 5,000</option>
+                      <option value="8000">Under KES 8,000</option>
+                      <option value="15000">Under KES 15,000</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <button 
                 type="submit" 
-                className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 text-lg hover:scale-105"
+                className="w-full mt-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-lg flex items-center justify-center gap-3 text-lg hover:shadow-xl hover:scale-[1.02]"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-6 w-6" />
                 Search Accommodations
               </button>
             </form>
