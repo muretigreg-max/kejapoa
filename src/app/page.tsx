@@ -220,7 +220,132 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 4. BROWSE BY INSTITUTION (Airbnb "destinations" style) */}
+      {/* 4. HOW IT WORKS - PREMIUM VERSION */}
+      <section className="relative py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 text-white overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20 mb-6">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-xs font-bold tracking-widest uppercase text-emerald-300">Simple Process</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">
+              How <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">KejaPoa</span> Works
+            </h2>
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+              Three simple steps to your perfect student accommodation
+            </p>
+          </div>
+
+          {/* Steps */}
+          <div className="space-y-20 lg:space-y-32">
+            
+            {/* Step 1 */}
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="relative">
+                <div className="absolute -top-8 -left-4 text-9xl font-black text-emerald-500/20 select-none">01</div>
+                <div className="relative">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-2xl shadow-emerald-500/50 mb-6">
+                    <Search className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-3xl sm:text-4xl font-bold mb-4">
+                    Search & <span className="text-emerald-400">Discover</span>
+                  </h3>
+                  <p className="text-lg text-slate-300 leading-relaxed mb-6">
+                    Tell us your institution, preferred room type, and budget. Our smart system instantly surfaces verified options near your campus.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-sm font-medium rounded-full border border-emerald-500/30">Smart Filters</span>
+                    <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-sm font-medium rounded-full border border-emerald-500/30">Instant Results</span>
+                    <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-sm font-medium rounded-full border border-emerald-500/30">Campus Proximity</span>
+                  </div>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="aspect-square max-w-md mx-auto bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-3xl border border-white/10 backdrop-blur-sm p-8 flex items-center justify-center">
+                  <Search className="h-32 w-32 text-emerald-400/60" strokeWidth={1} />
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="relative order-2 lg:order-1">
+                <div className="aspect-square max-w-md mx-auto bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-3xl border border-white/10 backdrop-blur-sm p-8 flex items-center justify-center">
+                  <ShieldCheck className="h-32 w-32 text-blue-400/60" strokeWidth={1} />
+                </div>
+              </div>
+              <div className="relative order-1 lg:order-2">
+                <div className="absolute -top-8 -left-4 text-9xl font-black text-blue-500/20 select-none">02</div>
+                <div className="relative">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl shadow-2xl shadow-blue-500/50 mb-6">
+                    <ShieldCheck className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-3xl sm:text-4xl font-bold mb-4">
+                    Verify & <span className="text-blue-400">Connect</span>
+                  </h3>
+                  <p className="text-lg text-slate-300 leading-relaxed mb-6">
+                    Every property is physically verified by our team. Browse real photos, read details, and contact landlords directly—no middlemen, no hidden fees.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-sm font-medium rounded-full border border-blue-500/30">100% Verified</span>
+                    <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-sm font-medium rounded-full border border-blue-500/30">Direct Contact</span>
+                    <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-sm font-medium rounded-full border border-blue-500/30">Real Photos</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="relative">
+                <div className="absolute -top-8 -left-4 text-9xl font-black text-purple-500/20 select-none">03</div>
+                <div className="relative">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl shadow-2xl shadow-purple-500/50 mb-6">
+                    <Home className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-3xl sm:text-4xl font-bold mb-4">
+                    Book & <span className="text-purple-400">Move In</span>
+                  </h3>
+                  <p className="text-lg text-slate-300 leading-relaxed mb-6">
+                    Secure your room with confidence. Pay securely via M-Pesa, get your lease agreement, and get ready for an amazing campus life.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-sm font-medium rounded-full border border-purple-500/30">M-Pesa Payments</span>
+                    <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-sm font-medium rounded-full border border-purple-500/30">Digital Lease</span>
+                    <span className="px-3 py-1 bg-purple-500/20 text-purple-300 text-sm font-medium rounded-full border border-purple-500/30">Secure Booking</span>
+                  </div>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="aspect-square max-w-md mx-auto bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-3xl border border-white/10 backdrop-blur-sm p-8 flex items-center justify-center">
+                  <Home className="h-32 w-32 text-purple-400/60" strokeWidth={1} />
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* CTA at bottom */}
+          <div className="mt-24 text-center">
+            <Link 
+              href="/search" 
+              className="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-4 px-8 rounded-full transition-all shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 text-lg"
+            >
+              Start Your Search
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. BROWSE BY INSTITUTION (Airbnb "destinations" style) */}
       {institutionStats.length > 0 && (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50">
           <div className="max-w-7xl mx-auto">
@@ -269,30 +394,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      {/* 5. WHY KEJAPOA (compact stats) */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-4xl font-extrabold text-emerald-600 mb-2">100%</div>
-              <div className="text-sm text-slate-600 font-medium">Verified Properties</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-extrabold text-emerald-600 mb-2">0%</div>
-              <div className="text-sm text-slate-600 font-medium">Agency Fees</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-extrabold text-emerald-600 mb-2">&lt;1km</div>
-              <div className="text-sm text-slate-600 font-medium">From Campus</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-extrabold text-emerald-600 mb-2">24/7</div>
-              <div className="text-sm text-slate-600 font-medium">Support</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* 6. LANDLORD CTA */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-900 text-white">
