@@ -162,13 +162,12 @@ export default async function HomePage() {
                       )}
                       
                       {/* Heart/Favorite Button */}
-                      <button 
-                        className="absolute top-3 right-3 text-white hover:scale-110 transition-transform"
-                        onClick={(e) => e.preventDefault()}
+                      <div 
+                        className="absolute top-3 right-3 text-white hover:scale-110 transition-transform cursor-pointer"
                         aria-label="Save to favorites"
                       >
                         <Heart className="h-6 w-6 drop-shadow-md" fill="rgba(0,0,0,0.3)" />
-                      </button>
+                      </div>
 
                       {/* Verified Badge */}
                       {property.isVerified && (
