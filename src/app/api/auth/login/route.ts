@@ -84,43 +84,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ✅ 3. Check Student table (if it exists)
-    try {
-      const student = await prisma.student.findUnique({
-        where: { email: normalizedEmail },
-      });
-
-      if (student) {
-        const isValid = await bcrypt.compare(password, student.password);
-        if (isValid) {
-          const token = jwt.sign(
-            { studentId: student.id, email: student.email, role: "STUDENT" },
-            JWT_SECRET,
-            { expiresIn: "7d" }
-          );
-
-          const response = NextResponse.json({
-            success: true,
-            role: "STUDENT",
-            redirect: "/",
-          });
-
-          response.cookies.set("kejapoa_student_token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 60 * 60 * 24 * 7,
-            path: "/",
-          });
-
-          return response;
-        }
-      }
-    } catch (e) {
-      // Student table might not exist yet - that's okay
-      console.log("Student table not found, skipping");
-    }
-
     // ❌ No matching user found
     return NextResponse.json(
       { error: "Invalid email or password" },
