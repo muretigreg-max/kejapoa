@@ -1,48 +1,75 @@
 ﻿// src/app/page.tsx
 import Link from "next/link";
-import { Search, ShieldCheck, MapPin, Home, Zap, Users, ArrowRight } from "lucide-react";
+import { 
+  Search, ShieldCheck, MapPin, Home, Zap, Users, ArrowRight, 
+  Heart, Star, GraduationCap, Building2, Wifi, Droplet, 
+  Shield as ShieldIcon, Car, UtensilsCrossed
+} from "lucide-react";
 import { PrismaClient } from "@prisma/client";
 import HeroImageSlider from "@/components/HeroImageSlider";
 import SearchForm from "@/components/SearchForm";
 
 const prisma = new PrismaClient();
 
+// Category definitions (Airbnb-style)
+const categories = [
+  { id: "all", name: "All", icon: Home },
+  { id: "Bedsitter", name: "Bedsitters", icon: Home },
+  { id: "Single Room", name: "Single Rooms", icon: Building2 },
+  { id: "Self-Contained", name: "Self-Contained", icon: Building2 },
+  { id: "One Bedroom", name: "1 Bedroom", icon: Building2 },
+  { id: "Budget", name: "Under KES 5k", icon: Zap },
+  { id: "Premium", name: "Premium", icon: Star },
+  { id: "Verified", name: "Verified", icon: ShieldCheck },
+];
+
 export default async function HomePage() {
-  // Fetch featured properties
+  // Fetch featured properties (Airbnb-style cards)
   const featuredProperties = await prisma.property.findMany({
     where: { isVerified: true, status: "VERIFIED" },
     include: {
       images: { where: { isPrimary: true }, take: 1 },
       institution: { select: { name: true } },
+      campus: { select: { name: true } },
+      units: { select: { type: true, rent: true } },
     },
     orderBy: { createdAt: "desc" },
-    take: 3,
+    take: 8,
   });
 
-  // Fetch only institutions that have at least one property
+  // Fetch institutions with properties (for "Browse by Institution")
   const institutionsWithProperties = await prisma.institution.findMany({
-    where: {
-      properties: {
-        some: {},
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-    },
+    where: { properties: { some: {} } },
+    select: { id: true, name: true },
     orderBy: { name: "asc" },
+    take: 6,
   });
+
+  // Fetch properties per institution for the destination cards
+  const institutionStats = await Promise.all(
+    institutionsWithProperties.map(async (inst) => {
+      const count = await prisma.property.count({
+        where: { institutionId: inst.id, isVerified: true },
+      });
+      const sampleProperty = await prisma.property.findFirst({
+        where: { institutionId: inst.id, isVerified: true },
+        include: { images: { where: { isPrimary: true }, take: 1 } },
+      });
+      return {
+        ...inst,
+        propertyCount: count,
+        coverImage: sampleProperty?.images[0]?.url || null,
+      };
+    })
+  );
 
   const hasInstitutions = institutionsWithProperties.length > 0;
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      {/* 1. HERO SECTION WITH FULL-BLEED BACKGROUND SLIDER */}
+    <main className="min-h-screen bg-white">
+      {/* 1. HERO SECTION */}
       <section className="relative min-h-[700px] lg:min-h-[800px] text-white overflow-hidden">
-        {/* Background Image Slider */}
         <HeroImageSlider />
-        
-        {/* Content Overlay */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 drop-shadow-2xl">
@@ -52,7 +79,6 @@ export default async function HomePage() {
               Verified, affordable, and close to campus. Skip the stress and find your next room with KejaPoa.
             </p>
 
-            {/* Conditional: Search Form OR Empty State */}
             {hasInstitutions ? (
               <SearchForm institutions={institutionsWithProperties} />
             ) : (
@@ -60,7 +86,7 @@ export default async function HomePage() {
                 <Home className="h-16 w-16 text-emerald-600 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-slate-900 mb-2">Coming Soon!</h3>
                 <p className="text-slate-600 mb-6">
-                  We're working with landlords to list properties near your campus. Check back soon!
+                  We're working with landlords to list properties near your campus.
                 </p>
                 <Link 
                   href="/landlord/register" 
@@ -70,167 +96,172 @@ export default async function HomePage() {
                 </Link>
               </div>
             )}
-
-            {/* Floating Badge */}
-            <div className="mt-8 inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-full text-sm font-semibold border border-white/20">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-              </span>
-              <span className="text-emerald-50">500+ Verified Listings</span>
-            </div>
           </div>
         </div>
       </section>
 
-           {/* 2. HOW IT WORKS */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 to-emerald-50/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-block bg-emerald-100 text-emerald-700 text-sm font-bold px-4 py-1.5 rounded-full mb-4">
-              Simple Process
-            </div>
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">How KejaPoa Works</h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Find your perfect student accommodation in 3 easy steps
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {/* Connecting Line (Desktop Only) */}
-            <div className="hidden md:block absolute top-24 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200" />
-            
-            {/* Step 1 */}
-            <div className="relative bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-xl transition-shadow">
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-br from-emerald-500 to-teal-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-lg">
-                1
-              </div>
-              <div className="pt-6">
-                <div className="bg-emerald-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                  <Search className="h-8 w-8 text-emerald-600" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3 text-center">Search & Filter</h3>
-                <p className="text-slate-600 text-center leading-relaxed">
-                  Enter your institution, preferred room type, and budget. We'll show you verified options near your campus.
-                </p>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="relative bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-xl transition-shadow">
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-br from-emerald-500 to-teal-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-lg">
-                2
-              </div>
-              <div className="pt-6">
-                <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                  <ShieldCheck className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3 text-center">Verify & Connect</h3>
-                <p className="text-slate-600 text-center leading-relaxed">
-                  Every property is verified by our team. Contact landlords directly—no middlemen or hidden fees.
-                </p>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="relative bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-xl transition-shadow">
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-br from-emerald-500 to-teal-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-lg">
-                3
-              </div>
-              <div className="pt-6">
-                <div className="bg-purple-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                  <Home className="h-8 w-8 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3 text-center">Move In</h3>
-                <p className="text-slate-600 text-center leading-relaxed">
-                  Secure your room with confidence. Pay securely via M-Pesa and get ready for campus life.
-                </p>
-              </div>
-            </div>
+      {/* 2. CATEGORY PILLS (Airbnb-style horizontal scroll) */}
+      <section className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-8 py-4 overflow-x-auto scrollbar-hide">
+            {categories.map((cat) => {
+              const Icon = cat.icon;
+              return (
+                <Link
+                  key={cat.id}
+                  href={cat.id === "all" ? "/search" : `/search?category=${cat.id}`}
+                  className="flex flex-col items-center gap-2 min-w-fit pb-2 border-b-2 border-transparent hover:border-slate-900 hover:text-slate-900 text-slate-600 transition-all group"
+                >
+                  <Icon className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-semibold whitespace-nowrap">{cat.name}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* 3. TRUST SIGNALS - Compact Version */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">Why Students Trust KejaPoa</h2>
-            <p className="text-slate-600">Built for students, by people who understand the struggle</p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center p-5 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100">
-              <ShieldCheck className="h-10 w-10 text-emerald-600 mx-auto mb-3" />
-              <div className="text-2xl font-extrabold text-slate-900 mb-1">100%</div>
-              <div className="text-sm text-slate-600 font-medium">Verified Properties</div>
-            </div>
-            
-            <div className="text-center p-5 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
-              <MapPin className="h-10 w-10 text-blue-600 mx-auto mb-3" />
-              <div className="text-2xl font-extrabold text-slate-900 mb-1">&lt;1km</div>
-              <div className="text-sm text-slate-600 font-medium">From Campus</div>
-            </div>
-            
-            <div className="text-center p-5 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100">
-              <Users className="h-10 w-10 text-purple-600 mx-auto mb-3" />
-              <div className="text-2xl font-extrabold text-slate-900 mb-1">0%</div>
-              <div className="text-sm text-slate-600 font-medium">Agency Fees</div>
-            </div>
-            
-            <div className="text-center p-5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100">
-              <Zap className="h-10 w-10 text-amber-600 mx-auto mb-3" />
-              <div className="text-2xl font-extrabold text-slate-900 mb-1">24/7</div>
-              <div className="text-sm text-slate-600 font-medium">Support</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. FEATURED PROPERTIES */}
+      {/* 3. FEATURED PROPERTIES (Airbnb-style grid) */}
       {featuredProperties.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50">
-          <div className="max-w-6xl mx-auto">
+        <section className="py-10 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-end mb-8">
               <div>
-                <h2 className="text-3xl font-bold text-slate-900 mb-2">Featured Accommodations</h2>
-                <p className="text-slate-600">Hand-picked, highly-rated places ready for you.</p>
+                <h2 className="text-3xl font-bold text-slate-900 mb-2">Popular stays for students</h2>
+                <p className="text-slate-600">Verified rooms near your campus</p>
               </div>
-              <Link href="/search" className="hidden sm:flex items-center gap-2 text-emerald-700 font-semibold hover:underline">
-                View All <ArrowRight className="h-4 w-4" />
+              <Link href="/search" className="hidden sm:flex items-center gap-2 text-slate-900 font-semibold hover:underline underline-offset-4">
+                Show all <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredProperties.map((property) => (
-                <Link 
-                  key={property.id} 
-                  href={`/property/${property.id}`}
-                  className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                >
-                  <div className="relative h-48 bg-slate-200">
-                    {property.images[0]?.url ? (
-                      <img 
-                        src={property.images[0].url} 
-                        alt={property.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-100 to-teal-100">
-                        <Home className="h-12 w-12 text-emerald-400" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProperties.map((property) => {
+                const lowestRent = property.units.length > 0 
+                  ? Math.min(...property.units.map(u => Number(u.rent)))
+                  : Number(property.baseRent);
+
+                return (
+                  <Link 
+                    key={property.id} 
+                    href={`/property/${property.id}`}
+                    className="group"
+                  >
+                    {/* Image */}
+                    <div className="relative aspect-square rounded-xl overflow-hidden bg-slate-100 mb-3">
+                      {property.images[0]?.url ? (
+                        <img 
+                          src={property.images[0].url} 
+                          alt={property.name} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-100 to-teal-100">
+                          <Home className="h-16 w-16 text-emerald-400" />
+                        </div>
+                      )}
+                      
+                      {/* Heart/Favorite Button */}
+                      <button 
+                        className="absolute top-3 right-3 text-white hover:scale-110 transition-transform"
+                        onClick={(e) => e.preventDefault()}
+                        aria-label="Save to favorites"
+                      >
+                        <Heart className="h-6 w-6 drop-shadow-md" fill="rgba(0,0,0,0.3)" />
+                      </button>
+
+                      {/* Verified Badge */}
+                      {property.isVerified && (
+                        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
+                          <ShieldCheck className="h-3 w-3" />
+                          Verified
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-start gap-2">
+                        <h3 className="font-semibold text-slate-900 truncate group-hover:text-emerald-700 transition-colors">
+                          {property.name}
+                        </h3>
+                        <div className="flex items-center gap-1 text-sm flex-shrink-0">
+                          <Star className="h-3.5 w-3.5 fill-slate-900 text-slate-900" />
+                          <span className="font-medium">New</span>
+                        </div>
                       </div>
-                    )}
-                    <div className="absolute top-3 left-3 bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                      <ShieldCheck className="h-3.5 w-3.5" /> VERIFIED
+                      
+                      <p className="text-sm text-slate-600 truncate">
+                        {property.campus?.name || property.institution?.name || "Near campus"}
+                      </p>
+                      
+                      <p className="text-sm text-slate-500">
+                        {property.units.length > 0 ? property.units.map(u => u.type).slice(0, 2).join(" · ") : "Multiple room types"}
+                      </p>
+                      
+                      <p className="pt-1">
+                        <span className="font-semibold text-slate-900">
+                          KES {lowestRent.toLocaleString()}
+                        </span>
+                        <span className="text-slate-600 text-sm"> /month</span>
+                      </p>
                     </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="mt-8 text-center sm:hidden">
+              <Link href="/search" className="inline-flex items-center gap-2 text-slate-900 font-semibold hover:underline">
+                Show all properties <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 4. BROWSE BY INSTITUTION (Airbnb "destinations" style) */}
+      {institutionStats.length > 0 && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-10">
+              <h2 className="text-3xl font-bold text-slate-900 mb-2">Browse by institution</h2>
+              <p className="text-slate-600">Find verified housing near your campus</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {institutionStats.map((inst) => (
+                <Link
+                  key={inst.id}
+                  href={`/search?institutionId=${inst.id}`}
+                  className="group relative h-64 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all"
+                >
+                  {inst.coverImage ? (
+                    <img 
+                      src={inst.coverImage} 
+                      alt={inst.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center">
+                      <GraduationCap className="h-20 w-20 text-white/30" />
+                    </div>
+                  )}
+                  
+                  {/* Dark gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  
+                  {/* Content */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-2xl font-bold mb-1 drop-shadow-lg">{inst.name}</h3>
+                    <p className="text-sm text-white/90 font-medium">
+                      {inst.propertyCount} {inst.propertyCount === 1 ? "property" : "properties"} available
+                    </p>
                   </div>
-                  <div className="p-5">
-                    <h3 className="text-lg font-bold text-slate-900 mb-1 line-clamp-1">{property.name}</h3>
-                    <p className="text-sm text-slate-500 mb-3">{property.institution?.name || "Near Campus"}</p>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-extrabold text-emerald-700">KES {Number(property.baseRent).toLocaleString()}</span>
-                      <span className="text-sm text-slate-500">/month</span>
-                    </div>
+
+                  {/* Arrow */}
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ArrowRight className="h-4 w-4 text-slate-900" />
                   </div>
                 </Link>
               ))}
@@ -239,7 +270,31 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 5. LANDLORD CTA */}
+      {/* 5. WHY KEJAPOA (compact stats) */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-4xl font-extrabold text-emerald-600 mb-2">100%</div>
+              <div className="text-sm text-slate-600 font-medium">Verified Properties</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-extrabold text-emerald-600 mb-2">0%</div>
+              <div className="text-sm text-slate-600 font-medium">Agency Fees</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-extrabold text-emerald-600 mb-2">&lt;1km</div>
+              <div className="text-sm text-slate-600 font-medium">From Campus</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-extrabold text-emerald-600 mb-2">24/7</div>
+              <div className="text-sm text-slate-600 font-medium">Support</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. LANDLORD CTA */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-900 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">Are you a Landlord?</h2>
@@ -259,7 +314,8 @@ export default async function HomePage() {
       <footer className="bg-slate-900 text-slate-400 py-8 px-4 text-center text-sm">
         <p>© {new Date().getFullYear()} KejaPoa. All rights reserved.</p>
         <div className="mt-2 flex justify-center gap-4">
-          <Link href="/admin/login" className="hover:text-white transition-colors">Admin</Link>
+          <Link href="/login" className="hover:text-white transition-colors">Sign in</Link>
+          <Link href="/landlord/register" className="hover:text-white transition-colors">List property</Link>
         </div>
       </footer>
     </main>
