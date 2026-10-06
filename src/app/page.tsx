@@ -83,43 +83,111 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 2. VALUE PROPOSITIONS */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+           {/* 2. HOW IT WORKS */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 to-emerald-50/30">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Why Students Trust KejaPoa</h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">We take the guesswork out of finding off-campus housing.</p>
+          <div className="text-center mb-16">
+            <div className="inline-block bg-emerald-100 text-emerald-700 text-sm font-bold px-4 py-1.5 rounded-full mb-4">
+              Simple Process
+            </div>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">How KejaPoa Works</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Find your perfect student accommodation in 3 easy steps
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-lg transition-shadow">
-              <div className="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ShieldCheck className="h-8 w-8 text-emerald-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">100% Verified</h3>
-              <p className="text-slate-600">Every property is physically verified by our team to ensure it matches the listing.</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            {/* Connecting Line (Desktop Only) */}
+            <div className="hidden md:block absolute top-24 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-emerald-200 via-emerald-400 to-emerald-200" />
             
-            <div className="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-lg transition-shadow">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="h-8 w-8 text-blue-600" />
+            {/* Step 1 */}
+            <div className="relative bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-xl transition-shadow">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-br from-emerald-500 to-teal-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-lg">
+                1
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Close to Campus</h3>
-              <p className="text-slate-600">We prioritize listings within walking distance or a short commute to your institution.</p>
+              <div className="pt-6">
+                <div className="bg-emerald-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                  <Search className="h-8 w-8 text-emerald-600" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3 text-center">Search & Filter</h3>
+                <p className="text-slate-600 text-center leading-relaxed">
+                  Enter your institution, preferred room type, and budget. We'll show you verified options near your campus.
+                </p>
+              </div>
             </div>
-            
-            <div className="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-lg transition-shadow">
-              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="h-8 w-8 text-purple-600" />
+
+            {/* Step 2 */}
+            <div className="relative bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-xl transition-shadow">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-br from-emerald-500 to-teal-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-lg">
+                2
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Direct to Landlord</h3>
-              <p className="text-slate-600">No middlemen or hidden agency fees. Connect directly with property owners.</p>
+              <div className="pt-6">
+                <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                  <ShieldCheck className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3 text-center">Verify & Connect</h3>
+                <p className="text-slate-600 text-center leading-relaxed">
+                  Every property is verified by our team. Contact landlords directly—no middlemen or hidden fees.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-xl transition-shadow">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-br from-emerald-500 to-teal-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold shadow-lg">
+                3
+              </div>
+              <div className="pt-6">
+                <div className="bg-purple-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                  <Home className="h-8 w-8 text-purple-600" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3 text-center">Move In</h3>
+                <p className="text-slate-600 text-center leading-relaxed">
+                  Secure your room with confidence. Pay securely via M-Pesa and get ready for campus life.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. FEATURED PROPERTIES */}
+      {/* 3. TRUST SIGNALS - Compact Version */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">Why Students Trust KejaPoa</h2>
+            <p className="text-slate-600">Built for students, by people who understand the struggle</p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center p-5 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100">
+              <ShieldCheck className="h-10 w-10 text-emerald-600 mx-auto mb-3" />
+              <div className="text-2xl font-extrabold text-slate-900 mb-1">100%</div>
+              <div className="text-sm text-slate-600 font-medium">Verified Properties</div>
+            </div>
+            
+            <div className="text-center p-5 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+              <MapPin className="h-10 w-10 text-blue-600 mx-auto mb-3" />
+              <div className="text-2xl font-extrabold text-slate-900 mb-1">&lt;1km</div>
+              <div className="text-sm text-slate-600 font-medium">From Campus</div>
+            </div>
+            
+            <div className="text-center p-5 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100">
+              <Users className="h-10 w-10 text-purple-600 mx-auto mb-3" />
+              <div className="text-2xl font-extrabold text-slate-900 mb-1">0%</div>
+              <div className="text-sm text-slate-600 font-medium">Agency Fees</div>
+            </div>
+            
+            <div className="text-center p-5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100">
+              <Zap className="h-10 w-10 text-amber-600 mx-auto mb-3" />
+              <div className="text-2xl font-extrabold text-slate-900 mb-1">24/7</div>
+              <div className="text-sm text-slate-600 font-medium">Support</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. FEATURED PROPERTIES */}
       {featuredProperties.length > 0 && (
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50">
           <div className="max-w-6xl mx-auto">
@@ -171,7 +239,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 4. LANDLORD CTA */}
+      {/* 5. LANDLORD CTA */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-900 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">Are you a Landlord?</h2>
