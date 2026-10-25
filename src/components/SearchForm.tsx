@@ -1,6 +1,7 @@
 // src/components/SearchForm.tsx
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, MapPin, Home, Zap } from "lucide-react";
 
@@ -24,17 +25,16 @@ const BUDGETS = [
 
 export default function SearchForm() {
   const router = useRouter();
+  
+  // ✅ Use React state to track values (works on ALL devices)
+  const [town, setTown] = useState("");
+  const [area, setArea] = useState("");
+  const [propertyType, setPropertyType] = useState("");
+  const [maxBudget, setMaxBudget] = useState("999999");
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // ✅ BULLETPROOF mobile-friendly form extraction
-    const form = e.currentTarget;
-    const town = (form.elements.namedItem("town") as HTMLSelectElement)?.value || "";
-    const area = (form.elements.namedItem("area") as HTMLInputElement)?.value || "";
-    const propertyType = (form.elements.namedItem("propertyType") as HTMLSelectElement)?.value || "";
-    const maxBudget = (form.elements.namedItem("maxBudget") as HTMLSelectElement)?.value || "";
-
     if (!town) {
       alert("Please select a major town to search.");
       return;
@@ -60,7 +60,8 @@ export default function SearchForm() {
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 pointer-events-none" />
             <select 
-              name="town" 
+              value={town}
+              onChange={(e) => setTown(e.target.value)}
               className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-900 font-semibold cursor-pointer hover:border-slate-300 transition-colors"
             >
               <option value="">Select Town</option>
@@ -75,8 +76,9 @@ export default function SearchForm() {
           <div className="relative">
             <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-blue-600 pointer-events-none" />
             <input 
-              name="area"
               type="text"
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
               placeholder="e.g., Kilimani, Roysambu, Juja"
               className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-900 font-semibold placeholder:text-slate-400 placeholder:font-normal hover:border-slate-300 transition-colors"
             />
@@ -89,7 +91,8 @@ export default function SearchForm() {
           <div className="relative">
             <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-600 pointer-events-none" />
             <select 
-              name="propertyType" 
+              value={propertyType}
+              onChange={(e) => setPropertyType(e.target.value)}
               className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-900 font-semibold cursor-pointer hover:border-slate-300 transition-colors"
             >
               <option value="">Any Type</option>
@@ -104,7 +107,8 @@ export default function SearchForm() {
           <div className="relative">
             <Zap className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-amber-600 pointer-events-none" />
             <select 
-              name="maxBudget" 
+              value={maxBudget}
+              onChange={(e) => setMaxBudget(e.target.value)}
               className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-900 font-semibold cursor-pointer hover:border-slate-300 transition-colors"
             >
               {BUDGETS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
@@ -127,18 +131,20 @@ export default function SearchForm() {
         <div>
           <label className="block text-xs font-bold text-slate-900 mb-1.5">Major Town</label>
           <select 
-            name="town" 
+            value={town}
+            onChange={(e) => setTown(e.target.value)}
             className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all appearance-none"
           >
             <option value="">Select Town</option>
-            {MAJOR_TOWNS.map(t => <option key={t} value={t} className="text-slate-900 font-medium">{t}</option>)}
+            {MAJOR_TOWNS.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-xs font-bold text-slate-900 mb-1.5">Area / Neighborhood</label>
           <input 
-            name="area" 
             type="text" 
+            value={area}
+            onChange={(e) => setArea(e.target.value)}
             placeholder="e.g., Kilimani, Juja" 
             className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all placeholder:text-slate-400 placeholder:font-normal"
           />
@@ -147,20 +153,22 @@ export default function SearchForm() {
           <div>
             <label className="block text-xs font-bold text-slate-900 mb-1.5">Type</label>
             <select 
-              name="propertyType" 
+              value={propertyType}
+              onChange={(e) => setPropertyType(e.target.value)}
               className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all appearance-none"
             >
               <option value="">Any</option>
-              {ROOM_TYPES.map(t => <option key={t} value={t} className="text-slate-900 font-medium">{t}</option>)}
+              {ROOM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-900 mb-1.5">Budget</label>
             <select 
-              name="maxBudget" 
+              value={maxBudget}
+              onChange={(e) => setMaxBudget(e.target.value)}
               className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all appearance-none"
             >
-              {BUDGETS.map(b => <option key={b.value} value={b.value} className="text-slate-900 font-medium">{b.label}</option>)}
+              {BUDGETS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
             </select>
           </div>
         </div>
