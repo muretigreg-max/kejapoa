@@ -2,16 +2,30 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Search, MapPin } from "lucide-react";
-
-interface Institution {
-  id: string;
-  name: string;
-}
+import { Search, MapPin, Home, Zap } from "lucide-react";
 
 interface SearchFormProps {
-  institutions: Institution[];
+  // We can keep this prop for now, but we'll shift focus to towns
+  institutions?: any[]; 
 }
+
+const MAJOR_TOWNS = [
+  "Nairobi", "Kiambu", "Machakos", "Kajiado", 
+  "Nakuru", "Eldoret", "Mombasa", "Kisumu", "Thika"
+];
+
+const ROOM_TYPES = [
+  "Single Room", "Bedsitter", "1 Bedroom", "2 Bedroom", "3 Bedroom", "Family House"
+];
+
+const BUDGETS = [
+  { label: "Any Budget", value: "999999" },
+  { label: "Under KES 5,000", value: "5000" },
+  { label: "Under KES 10,000", value: "10000" },
+  { label: "Under KES 15,000", value: "15000" },
+  { label: "Under KES 25,000", value: "25000" },
+  { label: "Under KES 40,000", value: "40000" },
+];
 
 export default function SearchForm({ institutions }: SearchFormProps) {
   const router = useRouter();
@@ -20,143 +34,129 @@ export default function SearchForm({ institutions }: SearchFormProps) {
     e.preventDefault();
     
     const formData = new FormData(e.currentTarget);
-    const institutionId = formData.get("institutionId") as string;
+    const town = formData.get("town") as string;
+    const area = formData.get("area") as string;
     const propertyType = formData.get("propertyType") as string;
     const maxBudget = formData.get("maxBudget") as string;
 
-    // ✅ Manual validation: Ensure an institution is selected
-    if (!institutionId) {
-      alert("Please select an institution to search.");
+    if (!town) {
+      alert("Please select a major town.");
       return;
     }
 
-    // Build query string
     const params = new URLSearchParams();
-    params.set("institutionId", institutionId);
+    if (town) params.set("town", town);
+    if (area) params.set("area", area);
     if (propertyType) params.set("propertyType", propertyType);
-    if (maxBudget && maxBudget !== "99999") params.set("maxBudget", maxBudget);
+    if (maxBudget && maxBudget !== "999999") params.set("maxBudget", maxBudget);
 
-    // Navigate to search results
     router.push(`/search?${params.toString()}`);
   };
 
   return (
-    <form onSubmit={handleSearch} className="max-w-4xl mx-auto">
-      {/* Desktop: Unified Pill */}
-      <div className="hidden md:flex items-center bg-white rounded-full shadow-2xl border border-slate-200/60 p-1.5 hover:shadow-3xl transition-shadow duration-300">
+    <form onSubmit={handleSearch} className="max-w-5xl mx-auto">
+      {/* Desktop: 4-Column Clean Card */}
+      <div className="hidden md:flex items-end gap-4 bg-white rounded-2xl shadow-2xl border border-slate-200/60 p-4 hover:shadow-3xl transition-shadow duration-300">
         
-        {/* Institution */}
-        <div className="flex-1 px-6 py-3 rounded-full hover:bg-slate-50 transition-colors cursor-pointer border-r border-slate-200">
-          <div className="text-xs font-bold text-slate-900 mb-0.5">Where</div>
-          <select
-            name="institutionId" 
-            className="w-full text-sm text-slate-600 bg-transparent outline-none cursor-pointer appearance-none"
-          >
-            <option value="">Select institution</option>
-            {institutions.map((inst) => (
-              <option key={inst.id} value={inst.id}>
-                {inst.name}
-              </option>
-            ))}
-          </select>
+        {/* 1. Major Town */}
+        <div className="flex-1">
+          <label className="block text-xs font-bold text-slate-900 mb-1.5 ml-1">Major Town</label>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 pointer-events-none" />
+            <select 
+              name="town" 
+              className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700 font-medium cursor-pointer"
+              required
+            >
+              <option value="">Select Town</option>
+              {MAJOR_TOWNS.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
         </div>
 
-        {/* Room Type */}
-        <div className="flex-1 px-6 py-3 rounded-full hover:bg-slate-50 transition-colors cursor-pointer border-r border-slate-200">
-          <div className="text-xs font-bold text-slate-900 mb-0.5">Room type</div>
-          <select 
-            name="propertyType" 
-            className="w-full text-sm text-slate-600 bg-transparent outline-none cursor-pointer appearance-none"
-          >
-            <option value="">Any room</option>
-            <option value="Single Room">Single room</option>
-            <option value="Bedsitter">Bedsitter</option>
-            <option value="Self-Contained">Self-contained</option>
-            <option value="One Bedroom">One bedroom</option>
-          </select>
+        {/* 2. Subtown / Area */}
+        <div className="flex-1">
+          <label className="block text-xs font-bold text-slate-900 mb-1.5 ml-1">Area / Neighborhood</label>
+          <div className="relative">
+            <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-blue-600 pointer-events-none" />
+            <input 
+              name="area"
+              type="text"
+              placeholder="e.g., Kilimani, Roysambu, Juja"
+              className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-700 font-medium placeholder:text-slate-400"
+            />
+          </div>
         </div>
 
-        {/* Budget */}
-        <div className="flex-1 px-6 py-3 rounded-full hover:bg-slate-50 transition-colors cursor-pointer">
-          <div className="text-xs font-bold text-slate-900 mb-0.5">Budget</div>
-          <select 
-            name="maxBudget" 
-            className="w-full text-sm text-slate-600 bg-transparent outline-none cursor-pointer appearance-none"
-          >
-            <option value="99999">Any price</option>
-            <option value="3000">Under KES 3,000</option>
-            <option value="5000">Under KES 5,000</option>
-            <option value="8000">Under KES 8,000</option>
-            <option value="15000">Under KES 15,000</option>
-          </select>
+        {/* 3. Room Type */}
+        <div className="flex-1">
+          <label className="block text-xs font-bold text-slate-900 mb-1.5 ml-1">Room Type</label>
+          <div className="relative">
+            <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-600 pointer-events-none" />
+            <select 
+              name="propertyType" 
+              className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700 font-medium cursor-pointer"
+            >
+              <option value="">Any Type</option>
+              {ROOM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* 4. Budget */}
+        <div className="flex-1">
+          <label className="block text-xs font-bold text-slate-900 mb-1.5 ml-1">Max Budget</label>
+          <div className="relative">
+            <Zap className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-amber-600 pointer-events-none" />
+            <select 
+              name="maxBudget" 
+              className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700 font-medium cursor-pointer"
+            >
+              {BUDGETS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
+            </select>
+          </div>
         </div>
 
         {/* Search Button */}
         <button 
           type="submit" 
-          className="ml-2 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white p-4 rounded-full transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center justify-center"
+          className="bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white p-4 rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center justify-center mb-[1px]"
           aria-label="Search"
         >
-          <Search className="h-5 w-5" />
+          <Search className="h-6 w-6" />
         </button>
       </div>
 
-      {/* Mobile: Clean Stacked Card */}
-      <div className="md:hidden bg-white rounded-3xl shadow-2xl border border-white/30 p-6 space-y-4">
+      {/* Mobile: Stacked Card */}
+      <div className="md:hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 space-y-4">
         <div>
-          <label className="block text-xs font-bold text-slate-900 mb-1.5">Where</label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600" />
-            <select 
-              name="institutionId" 
-              className="w-full pl-9 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500"
-              // ✅ Removed 'required' to prevent hidden element validation errors
-            >
-              <option value="">Select institution</option>
-              {institutions.map((inst) => (
-                <option key={inst.id} value={inst.id}>
-                  {inst.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <label className="block text-xs font-bold text-slate-900 mb-1.5">Major Town</label>
+          <select name="town" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500" required>
+            <option value="">Select Town</option>
+            {MAJOR_TOWNS.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
         </div>
-
+        <div>
+          <label className="block text-xs font-bold text-slate-900 mb-1.5">Area / Neighborhood</label>
+          <input name="area" type="text" placeholder="e.g., Kilimani, Juja" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500" />
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold text-slate-900 mb-1.5">Room type</label>
-            <select 
-              name="propertyType" 
-              className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500"
-            >
+            <label className="block text-xs font-bold text-slate-900 mb-1.5">Type</label>
+            <select name="propertyType" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500">
               <option value="">Any</option>
-              <option value="Single Room">Single</option>
-              <option value="Bedsitter">Bedsitter</option>
-              <option value="Self-Contained">Self-contained</option>
+              {ROOM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
-
           <div>
             <label className="block text-xs font-bold text-slate-900 mb-1.5">Budget</label>
-            <select 
-              name="maxBudget" 
-              className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-emerald-500"
-            >
-              <option value="99999">Any</option>
-              <option value="3000">KES 3k</option>
-              <option value="5000">KES 5k</option>
-              <option value="8000">KES 8k</option>
-              <option value="15000">KES 15k</option>
+            <select name="maxBudget" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500">
+              {BUDGETS.map(b => <option key={b.value} value={b.value}>{b.label.split(" ")[2]}</option>)}
             </select>
           </div>
         </div>
-
-        <button 
-          type="submit" 
-          className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
-        >
-          <Search className="h-5 w-5" />
-          Search
+        <button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2">
+          <Search className="h-5 w-5" /> Search Homes
         </button>
       </div>
     </form>
