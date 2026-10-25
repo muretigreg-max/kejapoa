@@ -1,6 +1,6 @@
 ﻿// src/app/page.tsx
 import Link from "next/link";
-import { Search, MapPin, Home, ArrowRight, Building2 } from "lucide-react";
+import { Search, MapPin, Home, Building2 } from "lucide-react";
 import { PrismaClient } from "@prisma/client";
 import HeroImageSlider from "@/components/HeroImageSlider";
 import SearchForm from "@/components/SearchForm";
@@ -8,17 +8,64 @@ import SearchForm from "@/components/SearchForm";
 const prisma = new PrismaClient();
 
 export default async function HomePage() {
-  // Just check if we have any properties to show the search form
+  // Check if we have any properties to show the search form
   const propertyCount = await prisma.property.count({ where: { isVerified: true } });
   const hasProperties = propertyCount > 0;
 
   return (
-    <main className="min-h-screen bg-slate-950">
+    <main className="min-h-screen bg-slate-50">
+      
+      {/* ✅ STICKY TOP NAVIGATION BAR */}
+      <nav className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            
+            {/* Logo & Brand */}
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="bg-emerald-600 p-1.5 rounded-lg group-hover:bg-emerald-700 transition-colors">
+                <Home className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-extrabold text-slate-900 tracking-tight">KejaPoa</span>
+            </Link>
+
+            {/* Desktop Tabs */}
+            <div className="hidden md:flex items-center gap-8">
+              <Link href="/how-it-works" className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors">
+                How it Works
+              </Link>
+              <Link href="/locations" className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors">
+                Browse Locations
+              </Link>
+              <Link 
+                href="/landlord/register" 
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2 px-5 rounded-lg transition-all shadow-md hover:shadow-lg"
+              >
+                List Property
+              </Link>
+            </div>
+
+            {/* Mobile Tabs (Compact & Touch-Friendly) */}
+            <div className="md:hidden flex items-center gap-3">
+              <Link href="/how-it-works" className="p-2 text-slate-600 hover:text-emerald-600 hover:bg-slate-100 rounded-lg transition-colors" title="How it Works">
+                <Search className="h-5 w-5" />
+              </Link>
+              <Link href="/locations" className="p-2 text-slate-600 hover:text-emerald-600 hover:bg-slate-100 rounded-lg transition-colors" title="Locations">
+                <MapPin className="h-5 w-5" />
+              </Link>
+              <Link href="/landlord/register" className="bg-emerald-600 text-white text-xs font-bold py-2 px-3 rounded-lg shadow-sm">
+                List
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </nav>
+
       {/* SINGLE HERO SECTION */}
-      <section className="relative min-h-screen flex items-center justify-center text-white overflow-hidden">
+      <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center text-white overflow-hidden">
         <HeroImageSlider />
         
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 w-full">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 drop-shadow-2xl">
               Find Your Perfect <span className="text-emerald-400">Home</span>
@@ -39,22 +86,10 @@ export default async function HomePage() {
                 </Link>
               </div>
             )}
-
-            {/* Navigation Links to other sections */}
-            <div className="mt-12 flex flex-wrap justify-center gap-4">
-              <Link href="/how-it-works" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold py-3 px-6 rounded-full border border-white/20 transition-all hover:scale-105">
-                <Search className="h-4 w-4" /> How it Works
-              </Link>
-              <Link href="/locations" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold py-3 px-6 rounded-full border border-white/20 transition-all hover:scale-105">
-                <MapPin className="h-4 w-4" /> Browse Locations
-              </Link>
-              <Link href="/landlord/register" className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-full transition-all hover:scale-105 shadow-lg shadow-emerald-500/20">
-                <Building2 className="h-4 w-4" /> List Property
-              </Link>
-            </div>
           </div>
         </div>
       </section>
+
     </main>
   );
 }
