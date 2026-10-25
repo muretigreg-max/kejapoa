@@ -5,11 +5,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, MapPin, Home, Zap } from "lucide-react";
 
-const MAJOR_TOWNS = [
-  "Nairobi", "Kiambu", "Machakos", "Kajiado", 
-  "Nakuru", "Eldoret", "Mombasa", "Kisumu", "Thika"
-];
-
 const ROOM_TYPES = [
   "Single Room", "Bedsitter", "1 Bedroom", "2 Bedroom", "3 Bedroom", "Family House"
 ];
@@ -26,7 +21,6 @@ const BUDGETS = [
 export default function SearchForm() {
   const router = useRouter();
   
-  // ✅ Use React state to track values (works on ALL devices)
   const [town, setTown] = useState("");
   const [area, setArea] = useState("");
   const [propertyType, setPropertyType] = useState("");
@@ -35,14 +29,14 @@ export default function SearchForm() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!town) {
-      alert("Please select a major town to search.");
+    if (!town.trim()) {
+      alert("Please enter a town or location to search.");
       return;
     }
 
     const params = new URLSearchParams();
-    params.set("town", town);
-    if (area) params.set("area", area);
+    params.set("town", town.trim());
+    if (area.trim()) params.set("area", area.trim());
     if (propertyType) params.set("propertyType", propertyType);
     if (maxBudget && maxBudget !== "999999") params.set("maxBudget", maxBudget);
 
@@ -54,19 +48,18 @@ export default function SearchForm() {
       {/* Desktop: 4-Column Clean Card */}
       <div className="hidden md:flex items-end gap-4 bg-white rounded-2xl shadow-2xl border border-slate-200/60 p-4 hover:shadow-3xl transition-shadow duration-300">
         
-        {/* 1. Major Town */}
+        {/* 1. Town (Now a text input) */}
         <div className="flex-1">
-          <label className="block text-xs font-bold text-slate-900 mb-1.5 ml-1">Major Town</label>
+          <label className="block text-xs font-bold text-slate-900 mb-1.5 ml-1">Town / Location</label>
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 pointer-events-none" />
-            <select 
+            <input 
+              type="text"
               value={town}
               onChange={(e) => setTown(e.target.value)}
-              className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-900 font-semibold cursor-pointer hover:border-slate-300 transition-colors"
-            >
-              <option value="">Select Town</option>
-              {MAJOR_TOWNS.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
+              placeholder="e.g., Ruiru, Kimbo, Juja"
+              className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-900 font-semibold placeholder:text-slate-400 placeholder:font-normal hover:border-slate-300 transition-colors"
+            />
           </div>
         </div>
 
@@ -79,7 +72,7 @@ export default function SearchForm() {
               type="text"
               value={area}
               onChange={(e) => setArea(e.target.value)}
-              placeholder="e.g., Kilimani, Roysambu, Juja"
+              placeholder="e.g., Kilimani, Matangi"
               className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-900 font-semibold placeholder:text-slate-400 placeholder:font-normal hover:border-slate-300 transition-colors"
             />
           </div>
@@ -129,25 +122,30 @@ export default function SearchForm() {
       {/* Mobile: Stacked Card */}
       <div className="md:hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 space-y-4">
         <div>
-          <label className="block text-xs font-bold text-slate-900 mb-1.5">Major Town</label>
-          <select 
-            value={town}
-            onChange={(e) => setTown(e.target.value)}
-            className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all appearance-none"
-          >
-            <option value="">Select Town</option>
-            {MAJOR_TOWNS.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+          <label className="block text-xs font-bold text-slate-900 mb-1.5">Town / Location</label>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 pointer-events-none" />
+            <input 
+              type="text"
+              value={town}
+              onChange={(e) => setTown(e.target.value)}
+              placeholder="e.g., Ruiru, Kimbo, Juja"
+              className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all placeholder:text-slate-400 placeholder:font-normal"
+            />
+          </div>
         </div>
         <div>
           <label className="block text-xs font-bold text-slate-900 mb-1.5">Area / Neighborhood</label>
-          <input 
-            type="text" 
-            value={area}
-            onChange={(e) => setArea(e.target.value)}
-            placeholder="e.g., Kilimani, Juja" 
-            className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all placeholder:text-slate-400 placeholder:font-normal"
-          />
+          <div className="relative">
+            <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-blue-600 pointer-events-none" />
+            <input 
+              type="text" 
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
+              placeholder="e.g., Kilimani, Matangi" 
+              className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all placeholder:text-slate-400 placeholder:font-normal"
+            />
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
