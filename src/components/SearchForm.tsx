@@ -26,28 +26,26 @@ export default function SearchForm() {
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Stop default form submission
+    e.preventDefault();
     
-    const formData = new FormData(e.currentTarget);
-    const town = formData.get("town") as string;
-    const area = formData.get("area") as string;
-    const propertyType = formData.get("propertyType") as string;
-    const maxBudget = formData.get("maxBudget") as string;
+    // ✅ BULLETPROOF mobile-friendly form extraction
+    const form = e.currentTarget;
+    const town = (form.elements.namedItem("town") as HTMLSelectElement)?.value || "";
+    const area = (form.elements.namedItem("area") as HTMLInputElement)?.value || "";
+    const propertyType = (form.elements.namedItem("propertyType") as HTMLSelectElement)?.value || "";
+    const maxBudget = (form.elements.namedItem("maxBudget") as HTMLSelectElement)?.value || "";
 
-    // ✅ 100% Reliable JavaScript Validation
     if (!town) {
       alert("Please select a major town to search.");
-      return; // Stop execution if town is not selected
+      return;
     }
 
-    // Build query string
     const params = new URLSearchParams();
     params.set("town", town);
     if (area) params.set("area", area);
     if (propertyType) params.set("propertyType", propertyType);
     if (maxBudget && maxBudget !== "999999") params.set("maxBudget", maxBudget);
 
-    // Navigate to search results
     router.push(`/search?${params.toString()}`);
   };
 
@@ -130,7 +128,7 @@ export default function SearchForm() {
           <label className="block text-xs font-bold text-slate-900 mb-1.5">Major Town</label>
           <select 
             name="town" 
-            className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+            className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all appearance-none"
           >
             <option value="">Select Town</option>
             {MAJOR_TOWNS.map(t => <option key={t} value={t} className="text-slate-900 font-medium">{t}</option>)}
@@ -150,7 +148,7 @@ export default function SearchForm() {
             <label className="block text-xs font-bold text-slate-900 mb-1.5">Type</label>
             <select 
               name="propertyType" 
-              className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+              className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all appearance-none"
             >
               <option value="">Any</option>
               {ROOM_TYPES.map(t => <option key={t} value={t} className="text-slate-900 font-medium">{t}</option>)}
@@ -160,7 +158,7 @@ export default function SearchForm() {
             <label className="block text-xs font-bold text-slate-900 mb-1.5">Budget</label>
             <select 
               name="maxBudget" 
-              className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+              className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all appearance-none"
             >
               {BUDGETS.map(b => <option key={b.value} value={b.value} className="text-slate-900 font-medium">{b.label}</option>)}
             </select>
@@ -168,7 +166,7 @@ export default function SearchForm() {
         </div>
         <button 
           type="submit" 
-          className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
+          className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all active:scale-95"
         >
           <Search className="h-5 w-5" /> Search Homes
         </button>
