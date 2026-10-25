@@ -12,16 +12,19 @@ export async function GET(request: NextRequest) {
     const propertyType = searchParams.get("propertyType");
     const maxBudget = searchParams.get("maxBudget");
 
+    console.log("🔍 Search params:", { town, area, propertyType, maxBudget });
+
     const where: any = {};
 
-    // Filter by Major Town (case-insensitive partial match)
-    if (town) {
-      where.town = { contains: town, mode: "insensitive" };
-    }
-
-    // Filter by Subtown/Area (case-insensitive partial match)
-    if (area) {
-      where.area = { contains: area, mode: "insensitive" };
+    // ✅ FLEXIBLE LOCATION MATCHING: Check if search term appears in town, area, OR name
+    if (town || area) {
+      const searchTerm = (town || area || "").toLowerCase();
+      
+      where.OR = [
+        { town: { contains: searchTerm, mode: "insensitive" } },
+        { area: { contains: searchTerm, mode: "insensitive" } },
+        { name: { contains: searchTerm, mode: "insensitive" } },
+      ];
     }
 
     // Filter by Room Type
@@ -41,17 +44,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    console.log("🔍 Prisma where clause:", JSON.stringify(where, null, 2));
+
     const properties = await prisma.property.findMany({
       where,
       include: {
-        institution: { select: { name: true } }, // Keep for backward compatibility
-        campus: { select: { name: true } },
         units: { select: { id: true, type: true, rent: true, status: true } },
         amenities: { include: { amenity: { select: { name: true } } } },
         images: { where: { isPrimary: true }, take: 1 },
       },
       orderBy: { createdAt: "desc" },
     });
+
+    console.log(`🔍 Found ${properties.length} properties`);
 
     const formatted = properties.map((p: any) => {
       const unitTypes = [...new Set(p.units.map((u: any) => u.type))];
@@ -67,8 +72,6 @@ export async function GET(request: NextRequest) {
         deposit: Number(p.deposit) || 0,
         isVerified: p.isVerified,
         lastAvailabilityCheck: p.lastAvailabilityCheck || new Date().toISOString(),
-        institutionName: p.institution?.name || "",
-        campusName: p.campus?.name || "",
         distanceKm: null,
         landlordName: "Verified Landlord",
         landlordVerified: true,
@@ -81,7 +84,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ properties: formatted });
   } catch (error) {
-    console.error("Search error:", error);
+    console.error("❌ Search error:", error);
     return NextResponse.json({ error: "Failed to search properties" }, { status: 500 });
   }
 }
