@@ -8,7 +8,7 @@ import {
   ArrowLeft, MapPin, Home, Upload, X, Plus, Minus, 
   Loader2, ShieldCheck, Building2, Zap, Sparkles, 
   Camera, Image as ImageIcon, Check, Info, TrendingUp,
-  Users, Clock, Award
+  Users, Clock, Award, Star
 } from "lucide-react";
 
 interface Amenity {
