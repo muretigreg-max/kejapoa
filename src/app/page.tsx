@@ -21,11 +21,15 @@ export default async function HomePage() {
           <div className="flex items-center justify-between h-16">
             
             {/* Logo & Brand */}
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="bg-emerald-600 p-1.5 rounded-lg group-hover:bg-emerald-700 transition-colors">
+                        {/* Logo & Brand with Tagline (Visible on ALL screens) */}
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+              <div className="bg-emerald-600 p-1.5 rounded-lg group-hover:bg-emerald-700 transition-colors flex-shrink-0">
                 <Home className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-extrabold text-slate-900 tracking-tight">KejaPoa</span>
+              <div className="flex flex-col">
+                <span className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-tight">KejaPoa</span>
+                <span className="text-[10px] sm:text-xs text-slate-500 font-medium leading-tight">Verified Rentals Across Kenya</span>
+              </div>
             </Link>
 
             {/* Desktop Tabs */}
