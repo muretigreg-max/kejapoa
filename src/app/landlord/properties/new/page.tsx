@@ -246,10 +246,10 @@ export default function NewPropertyPage() {
             <span className="text-xs font-bold tracking-widest uppercase text-emerald-300">List Your Property</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4 max-w-2xl">
-            Reach thousands of verified tenants
+            Reach thousands of tenants
           </h1>
           <p className="text-lg text-emerald-100 max-w-2xl mb-8">
-            List your property for free and connect directly with quality tenants. No middlemen, no hidden fees.
+            List your property and connect directly with quality tenants. No middlemen, no hidden fees.
           </p>
 
           {/* Stats */}
