@@ -2,15 +2,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { HomeIcon, MapPin, Building2, CheckCircle, Loader2, Plus, X, Upload } from "lucide-react";
-
-interface Institution {
-  id: string;
-  name: string;
-  campuses: { id: string; name: string }[];
-}
+import Link from "next/link";
+import { 
+  ArrowLeft, MapPin, Home, Upload, X, Plus, Minus, 
+  Loader2, ShieldCheck, Building2, Zap
+} from "lucide-react";
 
 interface Amenity {
   id: string;
@@ -20,139 +17,149 @@ interface Amenity {
 interface Unit {
   unitNumber: string;
   type: string;
-  rent: number;
+  rent: string;
 }
 
 export default function NewPropertyPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [uploadingImages, setUploadingImages] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [success, setSuccess] = useState("");
+  
   const [amenities, setAmenities] = useState<Amenity[]>([]);
-  const [selectedInstitutionId, setSelectedInstitutionId] = useState("");
-  const [availableCampuses, setAvailableCampuses] = useState<{ id: string; name: string }[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  
+  const [units, setUnits] = useState<Unit[]>([
+    { unitNumber: "1", type: "Bedsitter", rent: "" }
+  ]);
+  
+  const [images, setImages] = useState<{ url: string; isPrimary: boolean }[]>([]);
+  const [uploading, setUploading] = useState(false);
 
+  // Form state
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    institutionId: "",
-    campusId: "",
-    county: "",
     town: "",
     area: "",
-    latitude: "",
-    longitude: "",
     baseRent: "",
     deposit: "",
   });
 
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  
-  // 🆕 Photo Upload State
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-
+  // Fetch amenities on mount
   useEffect(() => {
-    async function fetchData() {
+    async function fetchAmenities() {
       try {
         const res = await fetch("/api/properties");
         const data = await res.json();
-        setInstitutions(data.institutions || []);
         setAmenities(data.amenities || []);
       } catch (err) {
-        setError("Failed to load form data");
-      } finally {
-        setLoading(false);
+        console.error("Failed to fetch amenities");
       }
     }
-    fetchData();
+    fetchAmenities();
   }, []);
-
-  const handleInstitutionChange = (instId: string) => {
-    setSelectedInstitutionId(instId);
-    setFormData({ ...formData, institutionId: instId, campusId: "" });
-    
-    const inst = institutions.find((i) => i.id === instId);
-    setAvailableCampuses(inst?.campuses || []);
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleUnitChange = (index: number, field: keyof Unit, value: string) => {
+    const newUnits = [...units];
+    newUnits[index][field] = value;
+    setUnits(newUnits);
+  };
+
   const addUnit = () => {
-    setUnits([...units, { unitNumber: "", type: "Single Room", rent: 0 }]);
+    setUnits([...units, { unitNumber: String(units.length + 1), type: "Bedsitter", rent: "" }]);
   };
 
   const removeUnit = (index: number) => {
-    setUnits(units.filter((_, i) => i !== index));
-  };
-
-  const updateUnit = (index: number, field: keyof Unit, value: string | number) => {
-    const updated = [...units];
-    updated[index] = { ...updated[index], [field]: value };
-    setUnits(updated);
+    if (units.length > 1) {
+      setUnits(units.filter((_, i) => i !== index));
+    }
   };
 
   const toggleAmenity = (amenityId: string) => {
-    setSelectedAmenities((prev) =>
-      prev.includes(amenityId) ? prev.filter((id) => id !== amenityId) : [...prev, amenityId]
+    setSelectedAmenities(prev => 
+      prev.includes(amenityId) 
+        ? prev.filter(id => id !== amenityId)
+        : [...prev, amenityId]
     );
   };
 
-  // 🆕 Photo Handlers
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setImages((prev) => [...prev, ...newFiles]);
-      
-      const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-      setImagePreviews((prev) => [...prev, ...newPreviews]);
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "kejapoa_properties");
+
+        const res = await fetch("https://api.cloudinary.com/v1_1/dnxxkqzqj/image/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+        
+        if (data.secure_url) {
+          setImages(prev => [...prev, { 
+            url: data.secure_url, 
+            isPrimary: prev.length === 0 // First image is primary
+          }]);
+        }
+      }
+    } catch (err) {
+      setError("Failed to upload images. Please try again.");
+    } finally {
+      setUploading(false);
     }
   };
 
   const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    const newImages = images.filter((_, i) => i !== index);
+    // If we removed the primary image, make the first one primary
+    if (newImages.length > 0 && !newImages.some(img => img.isPrimary)) {
+      newImages[0].isPrimary = true;
+    }
+    setImages(newImages);
+  };
+
+  const setPrimaryImage = (index: number) => {
+    setImages(images.map((img, i) => ({ ...img, isPrimary: i === index })));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (images.length === 0) {
-      setError("Please upload at least one photo of the property.");
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    // Validation
+    if (!formData.name || !formData.town || !formData.baseRent) {
+      setError("Please fill in all required fields.");
+      setLoading(false);
       return;
     }
 
-    setSubmitting(true);
-    setUploadingImages(true);
-    setError("");
+    if (units.some(u => !u.rent)) {
+      setError("Please enter rent for all units.");
+      setLoading(false);
+      return;
+    }
+
+    if (images.length === 0) {
+      setError("Please upload at least one image.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      // 1. Upload all images to Cloudinary via our API
-      const uploadedUrls: string[] = [];
-      for (const file of images) {
-        const uploadFormData = new FormData();
-        uploadFormData.append("file", file);
-        
-        const res = await fetch("/api/landlord/upload", {
-          method: "POST",
-          body: uploadFormData,
-        });
-        
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to upload image");
-        uploadedUrls.push(data.url);
-      }
-
-      setUploadingImages(false);
-
-      // 2. Create property with the uploaded image URLs
       const res = await fetch("/api/properties", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -160,10 +167,7 @@ export default function NewPropertyPage() {
           ...formData,
           units,
           amenities: selectedAmenities,
-          images: uploadedUrls.map((url, index) => ({
-            url,
-            isPrimary: index === 0, // First image is the main cover photo
-          })),
+          images,
         }),
       });
 
@@ -173,358 +177,335 @@ export default function NewPropertyPage() {
         throw new Error(data.error || "Failed to create property");
       }
 
-      setSuccess(true);
+      setSuccess("Property submitted successfully! It will be reviewed by our team.");
+      setTimeout(() => router.push("/landlord/dashboard"), 2000);
     } catch (err: any) {
-      setUploadingImages(false);
-      setError(err.message || "Something went wrong");
+      setError(err.message || "Failed to create property");
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-      </div>
-    );
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center max-w-md">
-          <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="h-12 w-12 text-emerald-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">Property Submitted!</h2>
-          <p className="text-slate-600 mb-6">
-            Your property has been submitted for review. Our admin team will verify it within 24-48 hours.
-          </p>
-          <Link
-            href="/landlord/dashboard"
-            className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-xl transition-colors"
-          >
-            Back to Dashboard
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <main className="min-h-screen bg-slate-50 py-12 px-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/landlord/dashboard" className="inline-flex items-center gap-2 mb-4">
-            <div className="bg-emerald-600 p-1.5 rounded-lg">
-              <HomeIcon className="h-6 w-6 text-white" />
+    <main className="min-h-screen bg-slate-50">
+      {/* Top Nav */}
+      <nav className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Link href="/landlord/dashboard" className="flex items-center gap-2 text-slate-700 hover:text-emerald-600 font-medium">
+              <ArrowLeft className="h-5 w-5" />
+              <span>Back to Dashboard</span>
+            </Link>
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+              <span className="hidden sm:inline">Verified Landlord</span>
             </div>
-            <span className="text-2xl font-extrabold text-emerald-800 tracking-tight">KejaPoa</span>
-          </Link>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Add New Property</h1>
-          <p className="text-slate-600">List your accommodation and reach thousands of students.</p>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">List Your Property</h1>
+          <p className="text-slate-600">Fill in the details below to list your property on KejaPoa</p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          
+          {/* Error/Success Messages */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
               {error}
             </div>
           )}
+          {success && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl">
+              {success}
+            </div>
+          )}
 
-          {/* Basic Info */}
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Basic Information</h2>
+          {/* Section 1: Basic Information */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-emerald-600" />
+              Basic Information
+            </h2>
+            
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Property Name *</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Property Name <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   name="name"
-                  required
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-900"
-                  placeholder="e.g., Green View Hostels"
+                  placeholder="e.g., Matangi Heights Apartments"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  required
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Description
+                </label>
                 <textarea
                   name="description"
-                  rows={3}
                   value={formData.description}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none resize-none text-slate-900"
-                  placeholder="Describe your property..."
+                  rows={4}
+                  placeholder="Describe your property, nearby amenities, security, etc."
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none resize-none"
                 />
               </div>
             </div>
           </div>
 
-          {/* Location & Institution */}
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Location & Institution</h2>
-            <div className="space-y-4">
+          {/* Section 2: Location */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-emerald-600" />
+              Location
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Nearest Institution *</label>
-                <select
-                  name="institutionId"
-                  required
-                  value={formData.institutionId}
-                  onChange={(e) => handleInstitutionChange(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white text-slate-900"
-                >
-                  <option value="">Select Institution</option>
-                  {institutions.map((inst) => (
-                    <option key={inst.id} value={inst.id}>
-                      {inst.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Campus *</label>
-                <select
-                  name="campusId"
-                  required
-                  value={formData.campusId}
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Major Town <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="town"
+                  value={formData.town}
                   onChange={handleChange}
-                  disabled={!formData.institutionId}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white disabled:bg-slate-100 text-slate-900"
-                >
-                  <option value="">Select Campus</option>
-                  {availableCampuses.map((campus) => (
-                    <option key={campus.id} value={campus.id}>
-                      {campus.name}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="e.g., Ruiru, Kimbo-Ruiru, Juja"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  required
+                />
+                <p className="text-xs text-slate-500 mt-1">The main town or area near your property</p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">County</label>
-                  <input
-                    type="text"
-                    name="county"
-                    value={formData.county}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-900"
-                    placeholder="e.g., Nyeri"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Town</label>
-                  <input
-                    type="text"
-                    name="town"
-                    value={formData.town}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-900"
-                    placeholder="e.g., Nyeri"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">Area</label>
-                  <input
-                    type="text"
-                    name="area"
-                    value={formData.area}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-900"
-                    placeholder="e.g., Near Main Gate"
-                  />
-                </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Area / Neighborhood
+                </label>
+                <input
+                  type="text"
+                  name="area"
+                  value={formData.area}
+                  onChange={handleChange}
+                  placeholder="e.g., Matangi, Kilimani, Roysambu"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                />
+                <p className="text-xs text-slate-500 mt-1">Specific neighborhood or estate</p>
               </div>
             </div>
           </div>
 
-          {/* Pricing */}
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Pricing</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Base Rent (KES) *</label>
+          {/* Section 3: Units & Pricing */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Home className="h-5 w-5 text-emerald-600" />
+              Units & Pricing
+            </h2>
+            
+            <div className="space-y-4">
+              {units.map((unit, index) => (
+                <div key={index} className="grid grid-cols-12 gap-3 items-end">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Unit #</label>
+                    <input
+                      type="text"
+                      value={unit.unitNumber}
+                      onChange={(e) => handleUnitChange(index, "unitNumber", e.target.value)}
+                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div className="col-span-5">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Type</label>
+                    <select
+                      value={unit.type}
+                      onChange={(e) => handleUnitChange(index, "type", e.target.value)}
+                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm"
+                    >
+                      <option value="Single Room">Single Room</option>
+                      <option value="Bedsitter">Bedsitter</option>
+                      <option value="1 Bedroom">1 Bedroom</option>
+                      <option value="2 Bedroom">2 Bedroom</option>
+                      <option value="3 Bedroom">3 Bedroom</option>
+                      <option value="Family House">Family House</option>
+                    </select>
+                  </div>
+                  <div className="col-span-4">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Rent (KES) <span className="text-red-500">*</span></label>
+                    <input
+                      type="number"
+                      value={unit.rent}
+                      onChange={(e) => handleUnitChange(index, "rent", e.target.value)}
+                      placeholder="5000"
+                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm"
+                      required
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    {units.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeUnit(index)}
+                        className="p-2.5 text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={addUnit}
+                className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-semibold text-sm"
+              >
+                <Plus className="h-4 w-4" />
+                Add Another Unit
+              </button>
+
+              <div className="pt-4 border-t border-slate-200">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Base Rent (Lowest Price) <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="number"
                   name="baseRent"
-                  required
                   value={formData.baseRent}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-900"
-                  placeholder="e.g., 4500"
+                  placeholder="5000"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  required
                 />
+                <p className="text-xs text-slate-500 mt-1">Enter the lowest rent amount (will be displayed as "Starting from")</p>
               </div>
+
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Deposit (KES)</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Deposit (KES)
+                </label>
                 <input
                   type="number"
                   name="deposit"
                   value={formData.deposit}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-900"
-                  placeholder="Same as rent if blank"
+                  placeholder="5000"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                 />
+                <p className="text-xs text-slate-500 mt-1">Leave blank if same as base rent</p>
               </div>
             </div>
           </div>
 
-          {/* Units */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-slate-900">Units</h2>
-              <button
-                type="button"
-                onClick={addUnit}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                Add Unit
-              </button>
-            </div>
-
-            {units.length === 0 ? (
-              <p className="text-sm text-slate-500 text-center py-4">No units added yet. Click "Add Unit" to start.</p>
-            ) : (
-              <div className="space-y-3">
-                {units.map((unit, index) => (
-                  <div key={index} className="flex gap-3 items-end bg-slate-50 p-3 rounded-lg">
-                    <div className="flex-1">
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Unit Number</label>
-                      <input
-                        type="text"
-                        value={unit.unitNumber}
-                        onChange={(e) => updateUnit(index, "unitNumber", e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900"
-                        placeholder="e.g., Room 001"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Type</label>
-                      <select
-                        value={unit.type}
-                        onChange={(e) => updateUnit(index, "type", e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white text-slate-900"
-                      >
-                        <option>Single Room</option>
-                        <option>Bedsitter</option>
-                        <option>Self-Contained</option>
-                        <option>Shared Room</option>
-                        <option>One Bedroom</option>
-                      </select>
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Rent (KES)</label>
-                      <input
-                        type="number"
-                        value={unit.rent}
-                        onChange={(e) => updateUnit(index, "rent", parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeUnit(index)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Amenities */}
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Amenities</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {/* Section 4: Amenities */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Zap className="h-5 w-5 text-emerald-600" />
+              Amenities
+            </h2>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {amenities.map((amenity) => (
-                <label
+                <button
                   key={amenity.id}
-                  className={`flex items-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                  type="button"
+                  onClick={() => toggleAmenity(amenity.id)}
+                  className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
                     selectedAmenities.includes(amenity.id)
-                      ? "border-emerald-500 bg-emerald-50"
-                      : "border-slate-200 hover:border-slate-300"
+                      ? "bg-emerald-50 border-emerald-500 text-emerald-700"
+                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
                   }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedAmenities.includes(amenity.id)}
-                    onChange={() => toggleAmenity(amenity.id)}
-                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 rounded"
-                  />
-                  <span className="text-sm font-medium text-slate-700">{amenity.name}</span>
-                </label>
+                  {amenity.name}
+                </button>
               ))}
             </div>
           </div>
 
-          {/* 🆕 Photos Section */}
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Property Photos</h2>
-            <p className="text-sm text-slate-600 mb-3">
-              Upload clear photos of the property. The first photo will be the main cover image. 
-              <span className="text-emerald-600 font-semibold block sm:inline sm:ml-1"> (Mobile users can tap to use their camera!)</span>
-            </p>
+          {/* Section 5: Images */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Upload className="h-5 w-5 text-emerald-600" />
+              Property Images <span className="text-red-500">*</span>
+            </h2>
             
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="w-8 h-8 mb-2 text-slate-400" />
-                <p className="text-sm text-slate-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-emerald-500 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="image-upload"
+                  disabled={uploading}
+                />
+                <label htmlFor="image-upload" className="cursor-pointer">
+                  {uploading ? (
+                    <Loader2 className="h-12 w-12 text-emerald-600 mx-auto animate-spin" />
+                  ) : (
+                    <Upload className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                  )}
+                  <p className="text-sm font-semibold text-slate-700">
+                    {uploading ? "Uploading..." : "Click to upload images"}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">PNG, JPG up to 10MB each</p>
+                </label>
               </div>
-              {/* capture="environment" opens the rear camera on mobile devices! */}
-              <input 
-                type="file" 
-                className="hidden" 
-                accept="image/*" 
-                multiple 
-                capture="environment"
-                onChange={handleImageChange} 
-              />
-            </label>
 
-            {/* Image Previews */}
-            {imagePreviews.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative group">
-                    <img 
-                      src={preview} 
-                      alt={`Preview ${index + 1}`} 
-                      className="w-full h-32 object-cover rounded-lg border border-slate-200" 
-                    />
-                    {index === 0 && (
-                      <span className="absolute top-2 left-2 bg-emerald-600 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
-                        Cover
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+              {images.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {images.map((img, index) => (
+                    <div key={index} className="relative group aspect-square rounded-xl overflow-hidden border-2 border-slate-200">
+                      <img src={img.url} alt={`Property ${index + 1}`} className="w-full h-full object-cover" />
+                      {img.isPrimary && (
+                        <div className="absolute top-2 left-2 bg-emerald-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          Primary
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        {!img.isPrimary && (
+                          <button
+                            type="button"
+                            onClick={() => setPrimaryImage(index)}
+                            className="bg-white text-slate-900 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-100"
+                          >
+                            Set Primary
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={submitting || uploadingImages}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+            disabled={loading || uploading}
+            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {(submitting || uploadingImages) ? (
+            {loading ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                {uploadingImages ? "Uploading Photos..." : "Submitting..."}
+                Submitting...
               </>
             ) : (
               "Submit Property for Review"
