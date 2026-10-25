@@ -128,34 +128,53 @@ export default function SearchForm({ institutions }: SearchFormProps) {
       </div>
 
       {/* Mobile: Stacked Card */}
+           {/* Mobile: Stacked Card - Enhanced for Clear Selection Visibility */}
       <div className="md:hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 space-y-4">
         <div>
           <label className="block text-xs font-bold text-slate-900 mb-1.5">Major Town</label>
-          <select name="town" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500" required>
-            <option value="">Select Town</option>
-            {MAJOR_TOWNS.map(t => <option key={t} value={t}>{t}</option>)}
+          <select 
+            name="town" 
+            className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+            required
+          >
+            <option value="" className="text-slate-400">Select Town</option>
+            {MAJOR_TOWNS.map(t => <option key={t} value={t} className="text-slate-900 font-medium">{t}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-xs font-bold text-slate-900 mb-1.5">Area / Neighborhood</label>
-          <input name="area" type="text" placeholder="e.g., Kilimani, Juja" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500" />
+          <input 
+            name="area" 
+            type="text" 
+            placeholder="e.g., Kilimani, Juja" 
+            className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all placeholder:text-slate-400 placeholder:font-normal"
+          />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-bold text-slate-900 mb-1.5">Type</label>
-            <select name="propertyType" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500">
-              <option value="">Any</option>
-              {ROOM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            <select 
+              name="propertyType" 
+              className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+            >
+              <option value="" className="text-slate-400">Any</option>
+              {ROOM_TYPES.map(t => <option key={t} value={t} className="text-slate-900 font-medium">{t}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-900 mb-1.5">Budget</label>
-            <select name="maxBudget" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-emerald-500">
-              {BUDGETS.map(b => <option key={b.value} value={b.value}>{b.label.split(" ")[2]}</option>)}
+            <select 
+              name="maxBudget" 
+              className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
+            >
+              {BUDGETS.map(b => <option key={b.value} value={b.value} className="text-slate-900 font-medium">{b.label}</option>)}
             </select>
           </div>
         </div>
-        <button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2">
+        <button 
+          type="submit" 
+          className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
+        >
           <Search className="h-5 w-5" /> Search Homes
         </button>
       </div>
