@@ -53,7 +53,8 @@ export default function SearchResultsClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const institutionId = searchParams.get("institutionId") || "";
+  const town = searchParams.get("town") || "";
+  const area = searchParams.get("area") || "";
   const propertyType = searchParams.get("propertyType") || "";
   const maxBudget = searchParams.get("maxBudget") || "";
 
@@ -62,7 +63,8 @@ export default function SearchResultsClient() {
       setLoading(true);
       try {
         const params = new URLSearchParams();
-        if (institutionId) params.set("institutionId", institutionId);
+        if (town) params.set("town", town);
+        if (area) params.set("area", area);
         if (propertyType) params.set("propertyType", propertyType);
         if (maxBudget) params.set("maxBudget", maxBudget);
 
@@ -78,7 +80,7 @@ export default function SearchResultsClient() {
     }
 
     fetchProperties();
-  }, [institutionId, propertyType, maxBudget]);
+  }, [town, area, propertyType, maxBudget]);
 
   if (loading) {
     return (
@@ -92,7 +94,8 @@ export default function SearchResultsClient() {
   if (error) {
     return (
       <div className="text-center py-20">
-        <p className="text-red-600">{error}</p>
+        <p className="text-red-600 font-medium">{error}</p>
+        <Link href="/" className="text-emerald-600 hover:underline mt-2 inline-block">Return Home</Link>
       </div>
     );
   }
@@ -105,26 +108,61 @@ export default function SearchResultsClient() {
           {properties.length} {properties.length === 1 ? "Accommodation" : "Accommodations"} Found
         </h1>
         <p className="text-slate-600 mt-1">
-          {institutionId && "Near your institution"}
+          {town && `In ${town}`}
+          {area && ` • ${area}`}
           {propertyType && ` • ${propertyType}`}
-          {maxBudget && maxBudget !== "99999" && ` • Under KES ${parseInt(maxBudget).toLocaleString()}`}
+          {maxBudget && maxBudget !== "999999" && ` • Under KES ${parseInt(maxBudget).toLocaleString()}`}
         </p>
       </div>
 
-      {/* Results Grid */}
+      {/* Results Grid OR Helpful Empty State */}
       {properties.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 text-center border border-slate-200">
-          <HomeIcon className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-slate-900 mb-2">No accommodations found</h3>
-          <p className="text-slate-600 mb-6">
-            Try adjusting your filters or search for a different institution.
+        <div className="bg-white rounded-2xl p-8 sm:p-12 text-center border border-slate-200 shadow-sm">
+          <div className="bg-slate-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <HomeIcon className="h-10 w-10 text-slate-400" />
+          </div>
+          <h3 className="text-2xl font-bold text-slate-900 mb-3">No properties found</h3>
+          <p className="text-slate-600 mb-6 max-w-md mx-auto">
+            We couldn't find any properties matching your exact search. Try adjusting your filters or searching a different area.
           </p>
-          <Link
-            href="/"
-            className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors"
-          >
-            Start New Search
-          </Link>
+          
+          {/* Helpful Suggestions */}
+          <div className="bg-slate-50 rounded-xl p-5 mb-6 max-w-lg mx-auto text-left border border-slate-100">
+            <h4 className="font-semibold text-slate-900 mb-3 text-sm">💡 Suggestions:</h4>
+            <ul className="space-y-2 text-sm text-slate-700">
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-600 mt-0.5 font-bold">✓</span>
+                <span>Check the spelling of the town or area</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-600 mt-0.5 font-bold">✓</span>
+                <span>Try a different major town nearby</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-600 mt-0.5 font-bold">✓</span>
+                <span>Increase your maximum budget range</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-600 mt-0.5 font-bold">✓</span>
+                <span>Select "Any Type" for room type</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors shadow-md"
+            >
+              Start New Search
+            </Link>
+            <Link
+              href="/locations"
+              className="inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-6 rounded-xl transition-colors"
+            >
+              Browse All Locations
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -146,7 +184,6 @@ function PropertyCard({ property }: { property: Property }) {
       ? "Confirmed yesterday"
       : `Confirmed ${daysSinceCheck} days ago`;
 
-  // Safe fallbacks for arrays
   const unitTypes = property.unitTypes || [];
   const amenities = property.amenities || [];
   const availableUnits = property.availableUnits ?? 0;
@@ -212,25 +249,19 @@ function PropertyCard({ property }: { property: Property }) {
           <span className="text-sm text-slate-500">/month</span>
         </div>
 
-        {/* Unit Types - SAFE */}
+        {/* Unit Types */}
         <div className="flex flex-wrap gap-1.5 mb-4">
           {unitTypes.slice(0, 3).map((type, idx) => (
-            <span
-              key={idx}
-              className="bg-slate-100 text-slate-700 text-xs font-medium px-2.5 py-1 rounded-md"
-            >
+            <span key={idx} className="bg-slate-100 text-slate-700 text-xs font-medium px-2.5 py-1 rounded-md">
               {type}
             </span>
           ))}
         </div>
 
-        {/* Amenities - SAFE */}
+        {/* Amenities */}
         <div className="flex flex-wrap gap-2 mb-4">
           {amenities.slice(0, 4).map((amenity, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-1 text-xs text-slate-600 bg-emerald-50 px-2 py-1 rounded-md"
-            >
+            <div key={idx} className="flex items-center gap-1 text-xs text-slate-600 bg-emerald-50 px-2 py-1 rounded-md">
               {amenityIcons[amenity as keyof typeof amenityIcons] || <span className="h-3.5 w-3.5">•</span>}
               <span>{amenity}</span>
             </div>
@@ -242,7 +273,7 @@ function PropertyCard({ property }: { property: Property }) {
           )}
         </div>
 
-        {/* Footer - SAFE */}
+        {/* Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-100">
           <div className="flex items-center gap-1.5 text-sm text-slate-600">
             <Users className="h-4 w-4 text-emerald-600" />
