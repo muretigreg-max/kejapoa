@@ -4,11 +4,6 @@
 import { useRouter } from "next/navigation";
 import { Search, MapPin, Home, Zap } from "lucide-react";
 
-interface SearchFormProps {
-  // We can keep this prop for now, but we'll shift focus to towns
-  institutions?: any[]; 
-}
-
 const MAJOR_TOWNS = [
   "Nairobi", "Kiambu", "Machakos", "Kajiado", 
   "Nakuru", "Eldoret", "Mombasa", "Kisumu", "Thika"
@@ -27,11 +22,11 @@ const BUDGETS = [
   { label: "Under KES 40,000", value: "40000" },
 ];
 
-export default function SearchForm({ institutions }: SearchFormProps) {
+export default function SearchForm() {
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault(); // Stop default form submission
     
     const formData = new FormData(e.currentTarget);
     const town = formData.get("town") as string;
@@ -39,17 +34,20 @@ export default function SearchForm({ institutions }: SearchFormProps) {
     const propertyType = formData.get("propertyType") as string;
     const maxBudget = formData.get("maxBudget") as string;
 
+    // ✅ 100% Reliable JavaScript Validation
     if (!town) {
-      alert("Please select a major town.");
-      return;
+      alert("Please select a major town to search.");
+      return; // Stop execution if town is not selected
     }
 
+    // Build query string
     const params = new URLSearchParams();
-    if (town) params.set("town", town);
+    params.set("town", town);
     if (area) params.set("area", area);
     if (propertyType) params.set("propertyType", propertyType);
     if (maxBudget && maxBudget !== "999999") params.set("maxBudget", maxBudget);
 
+    // Navigate to search results
     router.push(`/search?${params.toString()}`);
   };
 
@@ -65,8 +63,7 @@ export default function SearchForm({ institutions }: SearchFormProps) {
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 pointer-events-none" />
             <select 
               name="town" 
-              className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700 font-medium cursor-pointer"
-              required
+              className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-900 font-semibold cursor-pointer hover:border-slate-300 transition-colors"
             >
               <option value="">Select Town</option>
               {MAJOR_TOWNS.map(t => <option key={t} value={t}>{t}</option>)}
@@ -83,7 +80,7 @@ export default function SearchForm({ institutions }: SearchFormProps) {
               name="area"
               type="text"
               placeholder="e.g., Kilimani, Roysambu, Juja"
-              className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-700 font-medium placeholder:text-slate-400"
+              className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-900 font-semibold placeholder:text-slate-400 placeholder:font-normal hover:border-slate-300 transition-colors"
             />
           </div>
         </div>
@@ -95,7 +92,7 @@ export default function SearchForm({ institutions }: SearchFormProps) {
             <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-600 pointer-events-none" />
             <select 
               name="propertyType" 
-              className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700 font-medium cursor-pointer"
+              className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-900 font-semibold cursor-pointer hover:border-slate-300 transition-colors"
             >
               <option value="">Any Type</option>
               {ROOM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -110,7 +107,7 @@ export default function SearchForm({ institutions }: SearchFormProps) {
             <Zap className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-amber-600 pointer-events-none" />
             <select 
               name="maxBudget" 
-              className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-700 font-medium cursor-pointer"
+              className="w-full pl-10 pr-4 py-3.5 bg-white border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none text-slate-900 font-semibold cursor-pointer hover:border-slate-300 transition-colors"
             >
               {BUDGETS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
             </select>
@@ -128,16 +125,14 @@ export default function SearchForm({ institutions }: SearchFormProps) {
       </div>
 
       {/* Mobile: Stacked Card */}
-           {/* Mobile: Stacked Card - Enhanced for Clear Selection Visibility */}
       <div className="md:hidden bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 space-y-4">
         <div>
           <label className="block text-xs font-bold text-slate-900 mb-1.5">Major Town</label>
           <select 
             name="town" 
             className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
-            required
           >
-            <option value="" className="text-slate-400">Select Town</option>
+            <option value="">Select Town</option>
             {MAJOR_TOWNS.map(t => <option key={t} value={t} className="text-slate-900 font-medium">{t}</option>)}
           </select>
         </div>
@@ -157,7 +152,7 @@ export default function SearchForm({ institutions }: SearchFormProps) {
               name="propertyType" 
               className="w-full px-4 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-sm text-slate-900 font-semibold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all"
             >
-              <option value="" className="text-slate-400">Any</option>
+              <option value="">Any</option>
               {ROOM_TYPES.map(t => <option key={t} value={t} className="text-slate-900 font-medium">{t}</option>)}
             </select>
           </div>
