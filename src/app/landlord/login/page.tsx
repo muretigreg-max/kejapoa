@@ -4,11 +4,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Mail, Lock, Loader2, Eye, EyeOff, Building2, ArrowLeft } from "lucide-react";
+import { Mail, Phone, Lock, Loader2, Eye, EyeOff, Building2, ArrowLeft } from "lucide-react";
 
 export default function LandlordLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState(""); // Changed from email to identifier
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -23,7 +23,7 @@ export default function LandlordLoginPage() {
       const res = await fetch("/api/auth/landlord/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }), // Send identifier instead of email
       });
 
       const data = await res.json();
@@ -39,6 +39,9 @@ export default function LandlordLoginPage() {
       setLoading(false);
     }
   };
+
+  // Helper to show the right icon based on input
+  const isPhone = /^[0-9+\s-]+$/.test(identifier);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center px-4 py-12">
@@ -67,18 +70,22 @@ export default function LandlordLoginPage() {
               </div>
             )}
 
-            {/* Email */}
+            {/* Email OR Phone */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Email address
+                Email or Phone Number
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                {isPhone ? (
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                ) : (
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                )}
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="you@example.com or 0712345678"
                   className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
                   required
                   disabled={loading}
@@ -141,6 +148,11 @@ export default function LandlordLoginPage() {
             Not a landlord yet?{" "}
             <Link href="/landlord/register" className="text-emerald-700 font-semibold hover:underline">
               Register here
+            </Link>
+          </p>
+          <p className="text-sm text-slate-600">
+            <Link href="/landlord/forgot-password" className="text-emerald-700 font-semibold hover:underline">
+              Forgot password?
             </Link>
           </p>
         </div>
