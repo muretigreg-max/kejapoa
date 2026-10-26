@@ -67,7 +67,11 @@ model Landlord {
   packageId          String?
   package            Package?           @relation(fields: [packageId], references: [id])
   subscriptionEnd    DateTime?
-  
+
+  // ✅ NEW: Password reset fields
+  resetToken         String?
+  resetTokenExpiry   DateTime?
+
   properties         Property[]
   payments           Payment[]
   createdAt          DateTime           @default(now())
