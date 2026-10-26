@@ -1,9 +1,11 @@
 // src/app/api/auth/landlord/forgot-password/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { Resend } from "resend";
 import crypto from "crypto";
 
 const prisma = new PrismaClient();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +20,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!landlord) {
-      // Don't reveal if email exists or not (security best practice)
+      // Don't reveal if email exists (security best practice)
       return NextResponse.json({ 
         success: true, 
         message: "If an account exists with that email, you will receive reset instructions" 
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     // Generate secure reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
 
     // Save token to database
     await prisma.landlord.update({
@@ -39,16 +41,105 @@ export async function POST(request: NextRequest) {
     });
 
     // Create reset URL
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/landlord/reset-password/${resetToken}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get("origin") || "https://kejapoa.vercel.app";
+    const resetUrl = `${baseUrl}/landlord/reset-password/${resetToken}`;
 
-    // TODO: Send email with resetUrl (integrate with email service like SendGrid, Resend, etc.)
-    // For now, return the link in the response for testing
-    console.log(`🔑 Password reset link for ${email}: ${resetUrl}`);
+    // ✅ Send actual email
+    const { data, error } = await resend.emails.send({
+      from: "KejaPoa <onboarding@resend.dev>", // Change to your domain later
+      to: landlord.email,
+      subject: "Reset Your KejaPoa Password",
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Reset Your Password</title>
+          </head>
+          <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f1f5f9;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="100%" style="max-width: 560px; background-color: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    
+                    <!-- Header -->
+                    <tr>
+                      <td style="background: linear-gradient(135deg, #059669 0%, #0d9488 100%); padding: 32px 32px; text-align: center;">
+                        <h1 style="margin: 0; color: white; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">KejaPoa</h1>
+                        <p style="margin: 8px 0 0 0; color: #d1fae5; font-size: 14px;">Password Reset Request</p>
+                      </td>
+                    </tr>
+                    
+                    <!-- Body -->
+                    <tr>
+                      <td style="padding: 40px 32px;">
+                        <h2 style="margin: 0 0 16px 0; color: #0f172a; font-size: 22px; font-weight: 700;">
+                          Hi ${landlord.fullName},
+                        </h2>
+                        <p style="margin: 0 0 16px 0; color: #475569; font-size: 16px; line-height: 1.6;">
+                          We received a request to reset your password. Click the button below to create a new one.
+                        </p>
+                        
+                        <!-- CTA Button -->
+                        <table width="100%" cellpadding="0" cellspacing="0" style="margin: 32px 0;">
+                          <tr>
+                            <td align="center">
+                              <a href="${resetUrl}" 
+                                 style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #0d9488 100%); color: white; text-decoration: none; padding: 14px 40px; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);">
+                                Reset My Password
+                              </a>
+                            </td>
+                          </tr>
+                        </table>
+                        
+                        <p style="margin: 0 0 8px 0; color: #64748b; font-size: 14px; line-height: 1.6;">
+                          Or copy and paste this link into your browser:
+                        </p>
+                        <p style="margin: 0 0 24px 0; padding: 12px; background-color: #f1f5f9; border-radius: 8px; word-break: break-all;">
+                          <a href="${resetUrl}" style="color: #059669; font-size: 13px; text-decoration: none;">${resetUrl}</a>
+                        </p>
+                        
+                        <div style="padding: 16px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; margin-top: 24px;">
+                          <p style="margin: 0; color: #78350f; font-size: 14px; line-height: 1.5;">
+                            ⏰ <strong>This link expires in 1 hour.</strong><br>
+                            If you didn't request this, you can safely ignore this email.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                      <td style="background-color: #f8fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0;">
+                        <p style="margin: 0 0 8px 0; color: #64748b; font-size: 13px;">
+                          Need help? Contact us at <a href="mailto:support@kejapoa.com" style="color: #059669; text-decoration: none;">support@kejapoa.com</a>
+                        </p>
+                        <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                          © ${new Date().getFullYear()} KejaPoa. Verified Rentals Across Kenya.
+                        </p>
+                      </td>
+                    </tr>
+                    
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error("❌ Resend error:", error);
+      return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+    }
+
+    console.log(`✅ Password reset email sent to ${landlord.email}`);
 
     return NextResponse.json({ 
       success: true, 
-      message: "Reset link sent successfully",
-      resetLink: resetUrl // Remove this in production after adding email service
+      message: "Reset link sent successfully" 
     });
   } catch (error: any) {
     console.error("Forgot password error:", error);
