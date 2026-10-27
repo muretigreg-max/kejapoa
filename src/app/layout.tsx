@@ -3,24 +3,74 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "KejaPoa | Find Verified Accommodation",
-  description: "Find verified and affordable accommodation near you. No account required to search.",
-  icons: {
-    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23059669' rx='20'/%3E%3Cpath d='M50 20 L20 45 L30 45 L30 80 L70 80 L70 45 L80 45 Z' fill='white'/%3E%3Crect x='42' y='58' width='16' height='22' fill='%23059669'/%3E%3C/svg%3E",
+  title: {
+    default: "KejaPoa - Verified Rentals Across Kenya",
+    template: "%s | KejaPoa",
+  },
+  description: "Find verified, affordable student and family accommodation near your campus or workplace. Browse thousands of bedsitters, 1-bedroom, and family homes across Kenya.",
+  keywords: ["student accommodation Kenya", "bedsitter Nairobi", "rental houses Kenya", "campus housing", "affordable rentals", "verified properties Kenya"],
+  authors: [{ name: "KejaPoa" }],
+  creator: "KejaPoa",
+  publisher: "KejaPoa",
+  
+  // ✅ Add this section with YOUR exact code from Google
+  verification: {
+    google: "google7399e5c3a0d25e45.html", // <-- Paste YOUR verification code here (just the content part, not the full meta tag)
+  },
+};
+  
+  // Open Graph (Facebook, LinkedIn, WhatsApp)
+  openGraph: {
+    type: "website",
+    locale: "en_KE",
+    url: "https://kejapoa.vercel.app",
+    siteName: "KejaPoa",
+    title: "KejaPoa - Verified Rentals Across Kenya",
+    description: "Find verified, affordable accommodation near you. Skip the stress and find your next rental with KejaPoa.",
+    images: [
+      {
+        url: "https://kejapoa.vercel.app/og-image.png", // We'll create this
+        width: 1200,
+        height: 630,
+        alt: "KejaPoa - Verified Rentals Across Kenya",
+      },
+    ],
+  },
+  
+  // Twitter Card
+  twitter: {
+    card: "summary_large_image",
+    title: "KejaPoa - Verified Rentals Across Kenya",
+    description: "Find verified, affordable accommodation near your campus.",
+    images: ["https://kejapoa.vercel.app/og-image.png"],
+  },
+  
+  // Additional SEO
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  
+  verification: {
+    google: "your-google-verification-code", // We'll add this later
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      {/* Using standard system fonts for instant, offline-friendly loading */}
-      <body className="antialiased bg-slate-50 font-sans">
-        {children}
-      </body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   );
 }

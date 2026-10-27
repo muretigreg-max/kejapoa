@@ -1,4 +1,49 @@
 ﻿// src/app/property/[id]/page.tsx
+import type { Metadata } from "next";
+
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { id: string } 
+}): Promise<Metadata> {
+  const property = await prisma.property.findUnique({
+    where: { id: params.id },
+    select: { 
+      name: true, 
+      description: true, 
+      town: true, 
+      area: true,
+      baseRent: true,
+      images: { where: { isPrimary: true }, take: 1 }
+    },
+  });
+
+  if (!property) {
+    return {
+      title: "Property Not Found",
+    };
+  }
+
+  const title = `${property.name} - ${property.town}`;
+  const description = property.description || `Verified ${property.name} in ${property.town}, ${property.area || 'Kenya'}. Starting from KES ${property.baseRent}/month.`;
+  const image = property.images[0]?.url || "https://kejapoa.vercel.app/og-image.png";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: image }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
 import { notFound } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
 import { MapPin, ShieldCheck, Wifi, Droplet, Zap, Shield as ShieldIcon, Clock, Users, HomeIcon, Phone, Calendar, CheckCircle } from "lucide-react";
@@ -309,4 +354,31 @@ export default async function PropertyDetailsPage({
       </div>
     </main>
   );
+      {/* Structured Data for Google Rich Snippets */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "RealEstateListing",
+            "name": property.name,
+            "description": property.description || `Verified rental property in ${property.town}`,
+            "url": `https://kejapoa.vercel.app/property/${property.id}`,
+            "datePosted": property.createdAt,
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": property.town,
+              "addressRegion": property.area || "",
+              "addressCountry": "KE"
+            },
+            "offers": {
+              "@type": "Offer",
+              "price": property.baseRent,
+              "priceCurrency": "KES",
+              "availability": "https://schema.org/InStock"
+            },
+            "image": property.images[0]?.url || "https://kejapoa.vercel.app/og-image.png",
+          }),
+        }}
+      />
 }
