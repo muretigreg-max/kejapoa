@@ -62,6 +62,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* ✅ Google Search Console Verification */}
+        <meta name="google-site-verification" content="SqmSd5ZOrcn_Tvq5twHhAZEZ35UgsxmtxEu1MPo2V6c" />
+      </head>
       <body className="antialiased">
         {children}
       </body>
