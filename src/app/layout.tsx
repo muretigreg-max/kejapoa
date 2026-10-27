@@ -50,8 +50,12 @@ export const metadata: Metadata = {
   },
   
   verification: {
-    // ✅ PASTE YOUR GOOGLE VERIFICATION CODE INSIDE THE QUOTES BELOW
     google: "SqmSd5ZOrcn_Tvq5twHhAZEZ35UgsxmtxEu1MPo2V6c", 
+  },
+
+  // ✅ Add favicon to Next.js metadata
+  icons: {
+    icon: "/favicon.svg",
   },
 };
 
@@ -65,6 +69,9 @@ export default function RootLayout({
       <head>
         {/* ✅ Google Search Console Verification */}
         <meta name="google-site-verification" content="SqmSd5ZOrcn_Tvq5twHhAZEZ35UgsxmtxEu1MPo2V6c" />
+        
+        {/* ✅ Favicon Link */}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       </head>
       <body className="antialiased">
         {children}
