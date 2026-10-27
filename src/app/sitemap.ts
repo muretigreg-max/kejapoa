@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://kejapoa.vercel.app";
+  const baseUrl = "https://kejapoa-bice.vercel.app/";
 
   // Static pages
   const staticPages = [
