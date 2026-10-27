@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   
   verification: {
     // ✅ PASTE YOUR GOOGLE VERIFICATION CODE INSIDE THE QUOTES BELOW
-    google: "google7399e5c3a0d25e45.html", 
+    google: "google7399e5c3a0d25e45", 
   },
 };
 
