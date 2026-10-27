@@ -13,23 +13,16 @@ export const metadata: Metadata = {
   creator: "KejaPoa",
   publisher: "KejaPoa",
   
-  // ✅ Add this section with YOUR exact code from Google
-  verification: {
-    google: "google7399e5c3a0d25e45.html", // <-- Paste YOUR verification code here (just the content part, not the full meta tag)
-  },
-};
-  
-  // Open Graph (Facebook, LinkedIn, WhatsApp)
   openGraph: {
     type: "website",
     locale: "en_KE",
     url: "https://kejapoa.vercel.app",
     siteName: "KejaPoa",
     title: "KejaPoa - Verified Rentals Across Kenya",
-    description: "Find verified, affordable accommodation near you. Skip the stress and find your next rental with KejaPoa.",
+    description: "Find verified, affordable accommodation near your campus. Skip the stress and find your next rental with KejaPoa.",
     images: [
       {
-        url: "https://kejapoa.vercel.app/og-image.png", // We'll create this
+        url: "https://kejapoa.vercel.app/og-image.png",
         width: 1200,
         height: 630,
         alt: "KejaPoa - Verified Rentals Across Kenya",
@@ -37,7 +30,6 @@ export const metadata: Metadata = {
     ],
   },
   
-  // Twitter Card
   twitter: {
     card: "summary_large_image",
     title: "KejaPoa - Verified Rentals Across Kenya",
@@ -45,7 +37,6 @@ export const metadata: Metadata = {
     images: ["https://kejapoa.vercel.app/og-image.png"],
   },
   
-  // Additional SEO
   robots: {
     index: true,
     follow: true,
@@ -59,7 +50,8 @@ export const metadata: Metadata = {
   },
   
   verification: {
-    google: "your-google-verification-code", // We'll add this later
+    // ✅ PASTE YOUR GOOGLE VERIFICATION CODE INSIDE THE QUOTES BELOW
+    google: "google7399e5c3a0d25e45.html", 
   },
 };
 
@@ -70,7 +62,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="antialiased">
+        {children}
+      </body>
     </html>
   );
 }
