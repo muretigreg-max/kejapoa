@@ -93,6 +93,7 @@ export default function NewPropertyPage() {
     );
   };
 
+  // ✅ UPDATED: Better error handling for Cloudinary uploads
   const uploadFile = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -104,6 +105,13 @@ export default function NewPropertyPage() {
     });
 
     const data = await res.json();
+    
+    // Catch and throw Cloudinary errors so we can see them in the console/UI
+    if (data.error) {
+      console.error("❌ Cloudinary Upload Error:", data.error);
+      throw new Error(data.error.message || "Image upload failed");
+    }
+    
     return data.secure_url || null;
   };
 
@@ -123,6 +131,7 @@ export default function NewPropertyPage() {
 
   const processFiles = async (files: File[]) => {
     setUploading(true);
+    setError(""); // Clear previous errors
     try {
       for (const file of files) {
         const url = await uploadFile(file);
@@ -133,8 +142,9 @@ export default function NewPropertyPage() {
           }]);
         }
       }
-    } catch (err) {
-      setError("Failed to upload images. Please try again.");
+    } catch (err: any) {
+      console.error("Upload process failed:", err);
+      setError(err.message || "Failed to upload images. Please check your Cloudinary settings.");
     } finally {
       setUploading(false);
     }
