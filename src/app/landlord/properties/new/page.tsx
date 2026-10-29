@@ -46,6 +46,7 @@ export default function NewPropertyPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+ county: "", 
     town: "",
     area: "",
     baseRent: "",
@@ -191,6 +192,7 @@ export default function NewPropertyPage() {
       const payload = {
         name: formData.name,
         description: formData.description || "",
+county: formData.county,
         town: formData.town,
         area: formData.area || "",
         baseRent: Number(formData.baseRent),
@@ -405,8 +407,26 @@ export default function NewPropertyPage() {
               </div>
             </div>
             
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* County */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                    County
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="county"
+                    value={formData.county}
+                    onChange={handleChange}
+                    placeholder="e.g., Nairobi, Kiambu"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white outline-none transition-all text-slate-900 font-medium placeholder:text-slate-400 placeholder:font-normal"
+                    required
+                  />
+                </div>
+
+                {/* Town */}
                 <div>
                   <label className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
                     Major Town
@@ -417,13 +437,13 @@ export default function NewPropertyPage() {
                     name="town"
                     value={formData.town}
                     onChange={handleChange}
-                    placeholder="e.g., Ruiru, Kimbo-Ruiru, Juja"
+                    placeholder="e.g., Ruiru, Juja"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white outline-none transition-all text-slate-900 font-medium placeholder:text-slate-400 placeholder:font-normal"
                     required
                   />
-                  <p className="text-xs text-slate-500 mt-1.5">The main town near your property</p>
                 </div>
 
+                {/* Area */}
                 <div>
                   <label className="text-sm font-semibold text-slate-700 mb-2 block">Area / Neighborhood</label>
                   <input
@@ -431,13 +451,12 @@ export default function NewPropertyPage() {
                     name="area"
                     value={formData.area}
                     onChange={handleChange}
-                    placeholder="e.g., Matangi, Kilimani, Roysambu"
+                    placeholder="e.g., Matangi, Kilimani"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white outline-none transition-all text-slate-900 font-medium placeholder:text-slate-400 placeholder:font-normal"
                   />
-                  <p className="text-xs text-slate-500 mt-1.5">Specific estate or neighborhood</p>
                 </div>
               </div>
-            </div>
+            </div>s
           </section>
 
           {/* Section 3: Units & Pricing */}

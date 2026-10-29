@@ -31,20 +31,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields: name, town, baseRent, units, or images" }, { status: 400 });
     }
 
-    // 4. Create Property in Database
+        // 4. Create Property in Database
     const property = await prisma.property.create({
       data: {
         name,
         description: description || "",
+        county, // ✅ ADDED
         town,
         area: area || "",
         baseRent: Number(baseRent),
         deposit: deposit ? Number(deposit) : Number(baseRent),
         landlordId,
-        isVerified: false, // Requires admin approval
+        isVerified: false,
         status: "PENDING",
         
-        // Create related records
         units: {
           create: units.map((u: any) => ({
             unitNumber: u.unitNumber,
@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
           })),
         },
       },
+      // ... rest of the code remains the same
       include: {
         units: true,
         images: true,
