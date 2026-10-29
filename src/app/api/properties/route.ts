@@ -8,106 +8,96 @@ const JWT_SECRET = process.env.NEXTAUTH_SECRET || "kejapoa_super_secret_key_1234
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify landlord is logged in
+    // 1. Verify Landlord Token
     const token = request.cookies.get("kejapoa_landlord_token")?.value;
     if (!token) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized: Please log in" }, { status: 401 });
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    if (!decoded || decoded.role !== "LANDLORD") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    if (decoded.role !== "LANDLORD") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const landlordId = decoded.landlordId;
+
+    // 2. Parse Request Body
     const body = await request.json();
-    const {
-      name,
-      description,
-      institutionId,
-      campusId,
-      county,
-      town,
-      area,
-      latitude,
-      longitude,
-      baseRent,
-      deposit,
-      units,
-      amenities,
-      images, // ✅ 1. Added images to destructuring
-    } = body;
+    const { name, description, town, area, baseRent, deposit, units, amenities, images } = body;
 
-    // Validate required fields
-    if (!name || !institutionId || !campusId || !baseRent) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // 3. Validate Required Fields
+    if (!name || !town || !baseRent || !units || units.length === 0 || !images || images.length === 0) {
+      console.log("Missing fields. Received:", { name, town, baseRent, units, images });
+      return NextResponse.json({ error: "Missing required fields: name, town, baseRent, units, or images" }, { status: 400 });
     }
 
-    // Create the property
+    // 4. Create Property in Database
     const property = await prisma.property.create({
       data: {
-        landlordId: decoded.landlordId,
-        institutionId,
-        campusId,
         name,
         description: description || "",
-        county: county || "",
-        town: town || "",
+        town,
         area: area || "",
-        latitude: latitude ? parseFloat(latitude) : null,
-        longitude: longitude ? parseFloat(longitude) : null,
-        baseRent: parseFloat(baseRent),
-        deposit: deposit ? parseFloat(deposit) : parseFloat(baseRent),
-        isVerified: false, // New properties start as unverified
-        status: "PENDING", // Admin must approve
-        lastAvailabilityCheck: new Date(),
+        baseRent: Number(baseRent),
+        deposit: deposit ? Number(deposit) : Number(baseRent),
+        landlordId,
+        isVerified: false, // Requires admin approval
+        status: "PENDING",
+        
+        // Create related records
         units: {
-          create: units || [],
-        },
-        amenities: {
-          create: (amenities || []).map((amenityId: string) => ({
-            amenityId,
+          create: units.map((u: any) => ({
+            unitNumber: u.unitNumber,
+            type: u.type,
+            rent: Number(u.rent),
+            status: "VACANT",
           })),
         },
-        // ✅ 2. Create Images if they exist in the payload
-        images: images && images.length > 0 ? {
+        images: {
           create: images.map((img: any) => ({
             url: img.url,
             isPrimary: img.isPrimary || false,
           })),
-        } : undefined,
+        },
+        amenities: {
+          create: amenities.map((amenityId: string) => ({
+            amenityId,
+          })),
+        },
+      },
+      include: {
+        units: true,
+        images: true,
+        amenities: true,
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Property submitted successfully! It will be reviewed by our team.",
+    return NextResponse.json({ 
+      success: true, 
       propertyId: property.id,
+      message: "Property created successfully" 
     });
+
   } catch (error: any) {
-    console.error("Property creation error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to create property" },
-      { status: 500 }
-    );
+    console.error("❌ Property creation error:", error);
+    
+    // Handle Prisma specific errors
+    if (error.code === "P2002") {
+      return NextResponse.json({ error: "A property with this name already exists" }, { status: 400 });
+    }
+    
+    return NextResponse.json({ error: error.message || "Failed to create property" }, { status: 500 });
   }
 }
 
-// GET all institutions and amenities for the form
-export async function GET() {
+// Optional: GET route to fetch amenities or properties
+export async function GET(request: NextRequest) {
   try {
-    const [institutions, amenities] = await Promise.all([
-      prisma.institution.findMany({
-        include: { campuses: true },
-        orderBy: { name: "asc" },
-      }),
-      prisma.amenity.findMany({
-        orderBy: { name: "asc" },
-      }),
-    ]);
-
-    return NextResponse.json({ institutions, amenities });
+    const amenities = await prisma.amenity.findMany({
+      select: { id: true, name: true },
+    });
+    return NextResponse.json({ amenities });
   } catch (error) {
-    console.error("Error fetching form data:", error);
-    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch amenities" }, { status: 500 });
   }
 }

@@ -161,13 +161,13 @@ export default function NewPropertyPage() {
   const setPrimaryImage = (index: number) => {
     setImages(images.map((img, i) => ({ ...img, isPrimary: i === index })));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
     setLoading(true);
 
+    // Frontend validation
     if (!formData.name || !formData.town || !formData.baseRent) {
       setError("Please fill in all required fields.");
       setLoading(false);
@@ -187,26 +187,44 @@ export default function NewPropertyPage() {
     }
 
     try {
+      // ✅ Convert string inputs to numbers for the backend
+      const payload = {
+        name: formData.name,
+        description: formData.description || "",
+        town: formData.town,
+        area: formData.area || "",
+        baseRent: Number(formData.baseRent),
+        deposit: formData.deposit ? Number(formData.deposit) : undefined,
+        units: units.map(u => ({
+          unitNumber: u.unitNumber,
+          type: u.type,
+          rent: Number(u.rent),
+        })),
+        amenities: selectedAmenities,
+        images: images.map(img => ({
+          url: img.url,
+          isPrimary: img.isPrimary,
+        })),
+      };
+
       const res = await fetch("/api/properties", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          units,
-          amenities: selectedAmenities,
-          images,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
+        // ✅ Log the exact backend error to the console so we can see it
+        console.error("Backend API Error:", data);
         throw new Error(data.error || "Failed to create property");
       }
 
       setSuccess("Property submitted successfully! Our team will review it within 24 hours.");
       setTimeout(() => router.push("/landlord/dashboard"), 2500);
     } catch (err: any) {
+      console.error("Submission failed:", err);
       setError(err.message || "Failed to create property");
     } finally {
       setLoading(false);
