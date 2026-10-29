@@ -23,20 +23,22 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse Request Body
     const body = await request.json();
-    const { name, description, town, area, baseRent, deposit, units, amenities, images } = body;
+    
+    // ✅ ADDED 'county' TO DESTRUCTURING
+    const { name, description, county, town, area, baseRent, deposit, units, amenities, images } = body;
 
     // 3. Validate Required Fields
-    if (!name || !town || !baseRent || !units || units.length === 0 || !images || images.length === 0) {
-      console.log("Missing fields. Received:", { name, town, baseRent, units, images });
-      return NextResponse.json({ error: "Missing required fields: name, town, baseRent, units, or images" }, { status: 400 });
+    if (!name || !county || !town || !baseRent || !units || units.length === 0 || !images || images.length === 0) {
+      console.log("Missing fields. Received:", { name, county, town, baseRent, units, images });
+      return NextResponse.json({ error: "Missing required fields: name, county, town, baseRent, units, or images" }, { status: 400 });
     }
 
-        // 4. Create Property in Database
+    // 4. Create Property in Database
     const property = await prisma.property.create({
       data: {
         name,
         description: description || "",
-        county, // ✅ ADDED
+        county, // ✅ Now TypeScript knows what this is
         town,
         area: area || "",
         baseRent: Number(baseRent),
@@ -65,7 +67,6 @@ export async function POST(request: NextRequest) {
           })),
         },
       },
-      // ... rest of the code remains the same
       include: {
         units: true,
         images: true,
@@ -82,7 +83,6 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("❌ Property creation error:", error);
     
-    // Handle Prisma specific errors
     if (error.code === "P2002") {
       return NextResponse.json({ error: "A property with this name already exists" }, { status: 400 });
     }
@@ -91,7 +91,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Optional: GET route to fetch amenities or properties
 export async function GET(request: NextRequest) {
   try {
     const amenities = await prisma.amenity.findMany({
