@@ -99,7 +99,7 @@ export default function NewPropertyPage() {
     formData.append("file", file);
     formData.append("upload_preset", "kejapoa_properties");
 
-    const res = await fetch("https://api.cloudinary.com/v1_1/dnxxkqzqj/image/upload", {
+    const res = await fetch("https://api.cloudinary.com/v1_1/xgiyoilj/image/upload", {
       method: "POST",
       body: formData,
     });
